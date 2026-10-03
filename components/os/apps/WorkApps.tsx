@@ -375,6 +375,15 @@ export function RecordsApp() {
   const hue = PROJECT_HUES[p.id] ?? ['#a58bff', '#7048e8']
   const side = (n: number) => `${n < 3 ? 'A' : 'B'}${(n % 3) + 1}`
 
+  // Tonearm angle: 0deg = parked on the rest. While playing, the needle walks
+  // inward one track at a time, like a real record: first track sits in the
+  // outer grooves (18deg), last track just outside the label (35deg).
+  const ARM_FIRST = 18
+  const ARM_LAST = 35
+  const armAngle = playing
+    ? ARM_FIRST + ((ARM_LAST - ARM_FIRST) * i) / Math.max(allProjects.length - 1, 1)
+    : 0
+
   const step = (d: number) => {
     setI(n => (n + d + allProjects.length) % allProjects.length)
     setPlaying(true)
@@ -384,45 +393,79 @@ export function RecordsApp() {
     <div className="grid h-full grid-cols-1 sm:grid-cols-[minmax(250px,46%)_1fr]">
       {/* Turntable */}
       <div className="relative flex flex-col items-center justify-center gap-4 bg-[radial-gradient(ellipse_at_top,#2c2c30,#101012)] p-6 text-white">
-        <div className="relative aspect-square w-[min(220px,62vw)]">
-          {/* Platter + record */}
-          <div
-            className={cn('absolute inset-0 rounded-full', playing && 'os-spin')}
-            style={{
-              background:
-                'repeating-radial-gradient(circle at center, #111 0 2px, #1d1d1f 2px 4px), radial-gradient(circle, #222, #000)',
-              boxShadow: '0 10px 30px rgba(0,0,0,.6), inset 0 0 0 2px #000',
-            }}
-          >
+        {/* Plinth: record on the left, tonearm pivot outside the platter on the right */}
+        <div
+          className="relative aspect-[5/4] w-[min(280px,74vw)] rounded-xl border border-white/[.06]"
+          style={{
+            background: 'linear-gradient(145deg, #2b2b30, #151517)',
+            boxShadow: '0 12px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06)',
+          }}
+        >
+          {/* Record box: 70% of the plinth width, so 1 SVG unit = 0.7% of the plinth */}
+          <div className="absolute left-[5%] top-[6.25%] aspect-square w-[70%]">
+            {/* Platter + record. Always animated, just paused, so it stops where it is instead of snapping back. */}
             <div
-              className="absolute inset-[32%] flex items-center justify-center rounded-full"
-              style={{ background: `linear-gradient(135deg, ${hue[0]}, ${hue[1]})` }}
+              className="os-spin absolute inset-0 rounded-full"
+              style={{
+                animationPlayState: playing ? 'running' : 'paused',
+                background:
+                  'repeating-radial-gradient(circle at center, #111 0 2px, #1d1d1f 2px 4px), radial-gradient(circle, #222, #000)',
+                boxShadow: '0 6px 18px rgba(0,0,0,.6), inset 0 0 0 2px #000',
+              }}
             >
-              <span
-                className={cn(
-                  '-translate-y-[38%] font-display font-black leading-none text-white/95',
-                  projectBadge(p).length > 1 ? 'text-[0.85rem]' : 'text-[1.35rem]',
-                )}
+              <div
+                className="absolute inset-[32%] flex items-center justify-center rounded-full"
+                style={{ background: `linear-gradient(135deg, ${hue[0]}, ${hue[1]})` }}
               >
-                {projectBadge(p)}
-              </span>
-              <span className="absolute h-2.5 w-2.5 rounded-full bg-[#111]" />
+                <span
+                  className={cn(
+                    '-translate-y-[38%] font-display font-black leading-none text-white/95',
+                    projectBadge(p).length > 1 ? 'text-[0.8rem]' : 'text-[1.2rem]',
+                  )}
+                >
+                  {projectBadge(p)}
+                </span>
+                <span className="absolute h-2 w-2 rounded-full bg-[#111]" />
+              </div>
+              {/* sheen */}
+              <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_30deg,transparent_0deg,rgba(255,255,255,.10)_40deg,transparent_80deg,transparent_180deg,rgba(255,255,255,.08)_220deg,transparent_260deg)]" />
             </div>
-            {/* sheen */}
-            <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_30deg,transparent_0deg,rgba(255,255,255,.10)_40deg,transparent_80deg,transparent_180deg,rgba(255,255,255,.08)_220deg,transparent_260deg)]" />
+
+            {/* Tonearm. Coordinates: the record is 0..100, centre (50,50).
+                Pivot sits off the platter at (114,10). Stopped (0deg) the arm parks on its
+                rest beside the record; playing, armAngle moves the needle inward per track. */}
+            <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden>
+              {/* static: pivot base + arm rest */}
+              <circle cx="114" cy="10" r="9" fill="#232327" stroke="#3c3c42" strokeWidth="1" />
+              <rect x="110" y="57" width="8" height="5" rx="1.2" fill="#3a3a40" />
+              <g
+                style={{
+                  transform: `rotate(${armAngle}deg)`,
+                  transformOrigin: '114px 10px',
+                  transformBox: 'view-box',
+                  transition: 'transform 700ms cubic-bezier(.4,0,.2,1)',
+                }}
+              >
+                {/* counterweight */}
+                <rect x="110" y="-6" width="8" height="9" rx="1.5" fill="#9aa1ab" stroke="#6f757e" strokeWidth=".6" />
+                {/* tube + headshell offset */}
+                <path d="M114 10 L114 62 L110 72" stroke="#d9dce2" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                {/* headshell + cartridge, needle tip at (110,76) */}
+                <rect x="107" y="69" width="6" height="8" rx="1.2" fill="#9aa1ab" transform="rotate(16 110 73)" />
+                <rect x="108.6" y="75" width="2.8" height="2" rx=".5" fill="#c0271c" transform="rotate(16 110 73)" />
+                {/* pivot cap */}
+                <circle cx="114" cy="10" r="4.5" fill="#c9ccd2" stroke="#7a7f88" strokeWidth=".8" />
+              </g>
+            </svg>
           </div>
 
-          {/* Tonearm */}
-          <svg
-            viewBox="0 0 100 100"
-            className="absolute -right-[12%] -top-[6%] h-[80%] w-[80%] origin-[82%_14%] transition-transform duration-500"
-            style={{ transform: `rotate(${playing ? 24 : 0}deg)` }}
-            aria-hidden
-          >
-            <circle cx="82" cy="14" r="8" fill="#c9ccd2" stroke="#7a7f88" />
-            <path d="M82 14 L74 70 L62 84" stroke="#d9dce2" strokeWidth="3.2" fill="none" strokeLinecap="round" />
-            <rect x="55" y="80" width="12" height="7" rx="1.5" fill="#9aa1ab" transform="rotate(-38 61 83)" />
-          </svg>
+          {/* start/stop indicator */}
+          <span
+            className={cn(
+              'absolute bottom-[6%] right-[6%] h-2 w-2 rounded-full transition-colors',
+              playing ? 'bg-[#5fe0b4] shadow-[0_0_6px_#5fe0b4]' : 'bg-white/20',
+            )}
+          />
         </div>
 
         <div className="flex items-center gap-2">
