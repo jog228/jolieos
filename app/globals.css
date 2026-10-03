@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+/* ─── Semantic color tokens — switch on data-theme="dark" ─── */
+/* Light = classic Aqua. Dark = "graphite" windows on a night wallpaper. */
+:root {
+  --canvas:   #F5F6F8;   /* inset panels inside windows */
+  --surface:  #ECEDEF;   /* list headers, status bars */
+  --paper:    #FFFFFF;   /* window body */
+  --ink:      #1D1D1F;
+  --muted:    #6B6E75;
+  --hairline: #D6D8DC;
+  --accent:   #7048E8;
+
+  /* window chrome */
+  --chrome-top:      #EDEDED;
+  --chrome-bottom:   #D0D0D0;
+  --chrome-border:   #9C9C9C;
+  --chrome-title:    #404040;
+  --chrome-title-dim:#9A9A9A;
+
+  /* menu bar */
+  --menubar-top:     rgba(255, 255, 255, 0.94);
+  --menubar-bottom:  rgba(232, 232, 232, 0.94);
+
+  /* desktop wallpaper */
+  --wall-a: #EDE6FB;
+  --wall-b: #DCCFF6;
+  --wall-c: #E8DDF7;
+  --desk-label: #3B2A63;
+}
+
+:root[data-theme="dark"] {
+  --canvas:   #1C1C1E;
+  --surface:  #2A2A2C;
+  --paper:    #232325;
+  --ink:      #EDEDEF;
+  --muted:    #A1A1A6;
+  --hairline: #3A3A3D;
+  --accent:   #B49BFF;
+
+  --chrome-top:      #4A4A4D;
+  --chrome-bottom:   #343436;
+  --chrome-border:   #131314;
+  --chrome-title:    #E6E6E8;
+  --chrome-title-dim:#8A8A8E;
+
+  --menubar-top:     rgba(48, 48, 52, 0.92);
+  --menubar-bottom:  rgba(34, 34, 38, 0.92);
+
+  --wall-a: #241A3D;
+  --wall-b: #2E2150;
+  --wall-c: #2A1E45;
+  --desk-label: #EDE6FB;
+}
+
+/* ─── Expose semantic tokens to Tailwind as utilities ─────── */
+@theme inline {
+  --color-canvas:   var(--canvas);
+  --color-surface:  var(--surface);
+  --color-paper:    var(--paper);
+  --color-ink:      var(--ink);
+  --color-muted:    var(--muted);
+  --color-hairline: var(--hairline);
+  --color-accent:   var(--accent);
+
+  --font-display: var(--font-fraunces);
+  --font-sans:    var(--font-inter);
+  --font-mono:    var(--font-jetbrains-mono);
+  --font-aqua:    "Lucida Grande", "Lucida Sans Unicode", var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --text-2xs: 0.75rem;
+}
+
+/* ─── Base ────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--wall-b);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+::selection { background-color: #d6c8ff; color: #111; }
+
+/* ─── JolieOS: Aqua chrome ────────────────────────────────── */
+
+/* Wallpaper: soft lavender with gentle light, no pattern */
+.os-wallpaper {
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 15%, rgba(255,255,255,.55), transparent 65%),
+    radial-gradient(ellipse 60% 55% at 85% 85%, rgba(205,185,245,.45), transparent 65%),
+    linear-gradient(140deg, var(--wall-a) 0%, var(--wall-b) 55%, var(--wall-c) 100%);
+}
+:root[data-theme="dark"] .os-wallpaper {
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 15%, rgba(180,155,255,.12), transparent 65%),
+    linear-gradient(140deg, var(--wall-a) 0%, var(--wall-b) 55%, var(--wall-c) 100%);
+}
+
+/* Menu bar */
+.os-menubar {
+  background: linear-gradient(var(--menubar-top), var(--menubar-bottom));
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: 0 1px 0 rgba(0,0,0,.28), 0 1px 6px rgba(0,0,0,.12);
+}
+
+/* Windows */
+.os-window {
+  border-radius: 6px 6px 4px 4px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.28), 0 8px 22px rgba(0,0,0,.22);
+  transition: box-shadow .15s ease;
+}
+.os-window[data-active="true"] {
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 22px 60px rgba(0,0,0,.45), 0 4px 14px rgba(0,0,0,.2);
+}
+.os-window:focus-visible { outline: none; }
+
+.os-titlebar {
+  background: linear-gradient(var(--chrome-top), var(--chrome-bottom));
+  border-bottom: 1px solid var(--chrome-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+}
+:root[data-theme="dark"] .os-titlebar { box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+.os-window[data-active="false"] .os-titlebar { filter: saturate(.4) brightness(1.03); }
+
+/* Traffic-light buttons */
+.os-light {
+  width: 13px; height: 13px; border-radius: 9999px;
+  box-shadow: inset 0 0 0 .5px rgba(0,0,0,.45), inset 0 1px 1px rgba(255,255,255,.6);
+  position: relative;
+}
+.os-light::after { /* gloss */
+  content: ""; position: absolute; left: 3px; right: 3px; top: 1px; height: 5px;
+  border-radius: 9999px; background: linear-gradient(rgba(255,255,255,.85), rgba(255,255,255,0));
+}
+.os-light--close { background: radial-gradient(circle at 50% 70%, #ff8a80, #e0443e 60%, #b8241f); }
+.os-light--min   { background: radial-gradient(circle at 50% 70%, #ffe08a, #e9a924 60%, #b9800b); }
+.os-light--zoom  { background: radial-gradient(circle at 50% 70%, #a6ec8f, #43b636 60%, #2a8a22); }
+.os-window[data-active="false"] .os-light { background: radial-gradient(circle at 50% 70%, #e8e8e8, #c4c4c4 60%, #a5a5a5); }
+.os-light svg { opacity: 0; }
+.os-lights:hover .os-light svg { opacity: .65; }
+
+/* Status bar along the bottom of a window */
+.os-statusbar {
+  background: linear-gradient(var(--chrome-top), var(--chrome-bottom));
+  border-top: 1px solid var(--chrome-border);
+}
+
+/* Aqua buttons: glossy pill with a hard highlight line at 50% */
+.os-btn {
+  border-radius: 9999px;
+  font-family: var(--font-aqua);
+  box-shadow: 0 1px 2px rgba(0,0,0,.25), inset 0 0 0 1px rgba(0,0,0,.28);
+  transition: filter .1s;
+}
+.os-btn:active { filter: brightness(.88); }
+.os-btn--primary {
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0,0,0,.25);
+  background: linear-gradient(#c7b5ff 0%, #9273f2 49%, #7048e8 51%, #9a7df4 100%);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3), inset 0 0 0 1px #5531c4;
+}
+.os-btn--default {
+  color: #1d1d1f;
+  background: linear-gradient(#ffffff 0%, #f1f1f1 49%, #e1e1e1 51%, #f7f7f7 100%);
+}
+
+/* Desktop icon tile (glassy rounded square behind the icon) */
+.os-tile {
+  background: linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,.08));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.22), 0 1px 4px rgba(0,0,0,.12);
+  backdrop-filter: blur(4px);
+}
+.os-icon-label { color: var(--desk-label); text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+:root[data-theme="dark"] .os-icon-label { text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+
+/* Dock: frosted glass shelf */
+.os-dock {
+  background: linear-gradient(rgba(255,255,255,.42), rgba(255,255,255,.18));
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.6);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+}
+:root[data-theme="dark"] .os-dock {
+  background: linear-gradient(rgba(255,255,255,.16), rgba(255,255,255,.06));
+  border-color: rgba(255,255,255,.18);
+}
+.os-dock-tip {
+  background: rgba(30,30,32,.82);
+  backdrop-filter: blur(8px);
+}
+
+/* Calendar date badge (iCal style) */
+.os-datebadge {
+  background: linear-gradient(#fff, #eef0f3);
+  box-shadow: 0 1px 2px rgba(0,0,0,.25), inset 0 0 0 1px rgba(0,0,0,.18);
+}
+.os-datebadge-head { background: linear-gradient(#ff6b5e, #d1251a); }
+
+/* Spinning record */
+@keyframes os-spin { to { transform: rotate(360deg); } }
+.os-spin { animation: os-spin 2.4s linear infinite; }
+
+@keyframes os-blink { 50% { opacity: .3; } }
+.os-blink { animation: os-blink 1.6s ease-in-out infinite; }
+
+/* Returning visitors skip the boot screen (attribute set before paint) */
+html[data-booted] .boot-screen { display: none; }
+
+/* Aqua-ish scrollbars */
+.os-scroll::-webkit-scrollbar { width: 11px; height: 11px; }
+.os-scroll::-webkit-scrollbar-track { background: var(--canvas); }
+.os-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #c7b5ff, #8a66f0);
+  border-radius: 9999px;
+  border: 2px solid var(--canvas);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-blink, .os-spin { animation: none; }
+}
