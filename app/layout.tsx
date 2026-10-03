@@ -37,13 +37,13 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://joliegoldstein.com',
     siteName: 'Jolie Goldstein',
-    title: 'Jolie Goldstein',
-    description: 'Full-stack developer and UX researcher.',
+    title: 'JolieOS',
+    description: 'Full-stack developer and UX researcher. Explore my work in JolieOS, a portfolio you click around like a desktop.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Jolie Goldstein',
-    description: 'Full-stack developer and UX researcher.',
+    title: 'JolieOS',
+    description: 'Full-stack developer and UX researcher. Explore my work in JolieOS, a portfolio you click around like a desktop.',
   },
 }
 
