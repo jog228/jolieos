@@ -17,7 +17,7 @@ import { AppIcon, type IconName } from './AppIcon'
 import { BootScreen } from './BootScreen'
 import { MenuBar } from './MenuBar'
 import { DOCK_H, MENU_H, OSProvider, useOS, type Win } from './OSProvider'
-import { getMeta, PROJECT_HUES, findProject, type AppId } from './registry'
+import { getMeta, PROJECT_HUES, findProject, projectBadge, type AppId } from './registry'
 import { Window } from './Window'
 
 // ─────────────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ export function JolieOS() {
 export function iconProps(win: Pick<Win, 'app' | 'param'>) {
   if (win.app === 'project') {
     const p = findProject(win.param)
-    return { name: 'app' as IconName, letter: p?.title[0], hue: PROJECT_HUES[win.param ?? ''] }
+    return { name: 'app' as IconName, letter: p && projectBadge(p), hue: PROJECT_HUES[win.param ?? ''] }
   }
   return { name: getMeta(win.app, win.param).icon }
 }

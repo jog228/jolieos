@@ -235,7 +235,15 @@ function renderIcon(name: IconName, url: (s: string) => string, letter?: string)
         <>
           <rect x="6" y="6" width="52" height="52" rx="12" fill={url('app')} />
           <rect x="6" y="6" width="52" height="24" rx="12" fill={url('gloss')} />
-          <text x="32" y="43" textAnchor="middle" fontSize="27" fontWeight="700" fill="#fff" fontFamily="Georgia, 'Times New Roman', serif">
+          <text
+            x="32"
+            y="43"
+            textAnchor="middle"
+            fontSize={letter && letter.length > 1 ? 18 : 27}
+            fontWeight="700"
+            fill="#fff"
+            fontFamily="Georgia, 'Times New Roman', serif"
+          >
             {letter ?? '•'}
           </text>
         </>

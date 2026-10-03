@@ -8,7 +8,7 @@ import { experience } from '@/lib/experience'
 import { cn } from '@/lib/utils'
 import { AppIcon, type IconName } from './AppIcon'
 import { MENU_H, useOS } from './OSProvider'
-import { allProjects, PROJECT_HUES, shortOrg, type AppId } from './registry'
+import { allProjects, PROJECT_HUES, projectBadge, shortOrg, type AppId } from './registry'
 
 interface MenuItem {
   label: string
@@ -262,10 +262,10 @@ function buildIndex(): Hit[] {
       label: p.title,
       kind: `Project · ${p.year}`,
       icon: 'app',
-      letter: p.title[0],
+      letter: projectBadge(p),
       hue: PROJECT_HUES[p.id],
       run: open => open('project', p.id),
-      keywords: `${p.title} ${p.tags.join(' ')} ${p.summary}`.toLowerCase(),
+      keywords: `${p.title} ${p.organization} ${p.tags.join(' ')} ${p.summary}`.toLowerCase(),
     })),
     ...experience.map<Hit>(e => ({
       label: shortOrg(e.organization),

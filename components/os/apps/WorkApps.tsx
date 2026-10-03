@@ -9,7 +9,7 @@ import { experience, type Experience } from '@/lib/experience'
 import { cn } from '@/lib/utils'
 import { AppIcon } from '../AppIcon'
 import { useOS } from '../OSProvider'
-import { allProjects, findExperience, findProject, PROJECT_HUES, shortOrg } from '../registry'
+import { allProjects, findExperience, findProject, PROJECT_HUES, projectBadge, shortOrg } from '../registry'
 import { Label, OSButton, OSLinkButton, StatusBar, Tag } from '../ui'
 
 // Width of an element, for layouts that change with window size
@@ -55,7 +55,7 @@ function DateBadge({ dates, size = 'md' }: { dates: string; size?: 'md' | 'lg' }
 
 function ProjectIcon({ id, size = 40 }: { id: string; size?: number }) {
   const p = findProject(id)
-  return <AppIcon name="app" size={size} letter={p?.title[0]} hue={PROJECT_HUES[id]} />
+  return <AppIcon name="app" size={size} letter={p && projectBadge(p)} hue={PROJECT_HUES[id]} />
 }
 
 // ── Experience: calendar list on the left, details on the right ──
@@ -201,8 +201,13 @@ export function ProjectsApp() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={cover} alt="" className="h-full w-full object-cover object-top" loading="lazy" />
                   ) : (
-                    <span className="font-display text-[4.5rem] font-black text-white/95 [text-shadow:0_2px_10px_rgba(0,0,0,.2)]">
-                      {p.title[0]}
+                    <span
+                      className={cn(
+                        'font-display font-black text-white/95 [text-shadow:0_2px_10px_rgba(0,0,0,.2)]',
+                        projectBadge(p).length > 1 ? 'text-[2.6rem]' : 'text-[4.5rem]',
+                      )}
+                    >
+                      {projectBadge(p)}
                     </span>
                   )}
                   <span className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/35 to-transparent" />
@@ -246,10 +251,14 @@ export function ProjectApp({ id }: { id?: string }) {
             <Tag key={t}>{t}</Tag>
           ))}
         </div>
-        {p.link && (
-          <OSLinkButton href={p.link.href} variant="primary" className="mt-5">
-            {p.link.label} <ArrowUpRight size={12} aria-hidden />
-          </OSLinkButton>
+        {p.links && p.links.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {p.links.map((l, i) => (
+              <OSLinkButton key={l.href} href={l.href} variant={i === 0 ? 'primary' : 'default'}>
+                {l.label} <ArrowUpRight size={12} aria-hidden />
+              </OSLinkButton>
+            ))}
+          </div>
         )}
       </header>
 
@@ -294,14 +303,16 @@ export function ProjectApp({ id }: { id?: string }) {
 
       <StatusBar>
         <span className="flex flex-wrap items-center justify-between gap-2">
-          <span>Part of {shortOrg(p.organization)}</span>
-          <button
-            type="button"
-            onClick={() => open('experienceDetail', p.experienceId)}
-            className="text-accent hover:underline"
-          >
-            Show in Experience →
-          </button>
+          <span>{p.experienceId ? `Part of ${shortOrg(p.organization)}` : `Coursework · ${p.organization}`}</span>
+          {p.experienceId && (
+            <button
+              type="button"
+              onClick={() => open('experienceDetail', p.experienceId)}
+              className="text-accent hover:underline"
+            >
+              Show in Experience →
+            </button>
+          )}
         </span>
       </StatusBar>
     </article>
@@ -387,7 +398,14 @@ export function RecordsApp() {
               className="absolute inset-[32%] flex items-center justify-center rounded-full"
               style={{ background: `linear-gradient(135deg, ${hue[0]}, ${hue[1]})` }}
             >
-              <span className="-translate-y-[38%] font-display text-[1.35rem] font-black leading-none text-white/95">{p.title[0]}</span>
+              <span
+                className={cn(
+                  '-translate-y-[38%] font-display font-black leading-none text-white/95',
+                  projectBadge(p).length > 1 ? 'text-[0.85rem]' : 'text-[1.35rem]',
+                )}
+              >
+                {projectBadge(p)}
+              </span>
               <span className="absolute h-2.5 w-2.5 rounded-full bg-[#111]" />
             </div>
             {/* sheen */}

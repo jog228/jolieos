@@ -2,7 +2,7 @@
 // title, icon, and size. Rendering lives in AppContent.tsx so this file
 // stays free of component imports (avoids circular deps with OSProvider).
 
-import { experience } from '@/lib/experience'
+import { coursework, experience, type Project } from '@/lib/experience'
 import type { IconName } from './AppIcon'
 
 export type AppId =
@@ -28,12 +28,22 @@ export interface AppMeta {
   h: number
 }
 
-export const allProjects = experience.flatMap(exp =>
-  exp.projects.map(p => ({ ...p, experienceId: exp.id, organization: exp.organization })),
-)
+// Work projects carry their parent experienceId; coursework has none
+// (it isn't in the Experience calendar) and uses the course as its org line.
+export const allProjects: (Project & { experienceId?: string; organization: string })[] = [
+  ...experience.flatMap(exp =>
+    exp.projects.map(p => ({ ...p, experienceId: exp.id, organization: exp.organization })),
+  ),
+  ...coursework.map(p => ({ ...p, organization: p.course })),
+].sort((a, b) => b.order - a.order)
 
 export function findProject(id?: string) {
   return allProjects.find(p => p.id === id)
+}
+
+// The short badge shown on a project's icon/preview tile
+export function projectBadge(p: Pick<Project, 'title' | 'badge'>) {
+  return p.badge ?? p.title[0]
 }
 
 export function findExperience(id?: string) {
@@ -86,6 +96,7 @@ export const PROJECT_HUES: Record<string, [string, string]> = {
   icodepal: ['#5fe0b4', '#109a73'],
   '81-north': ['#7cc4ff', '#1f5fbf'],
   'your-fine-trip': ['#ffd27a', '#d39614'],
+  'cut-out-bin': ['#f2a65a', '#b5481f'],
 }
 
 // "Federal Reserve Board · Division of R&S" → "Federal Reserve Board"
