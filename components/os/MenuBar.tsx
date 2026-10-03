@@ -31,7 +31,7 @@ export function MenuBar() {
   const systemMenu: MenuItem[] = [
     { label: 'About JolieOS', onSelect: go('welcome') },
     { label: '', divider: true },
-    { label: 'Résumé…', href: links.resume },
+    { label: 'Resume…', href: links.resume },
     { label: '', divider: true },
     { label: 'Restart…', onSelect: reboot },
   ]
@@ -240,7 +240,7 @@ function buildIndex(): Hit[] {
   const ext = (label: string, href: string, keywords = ''): Hit => ({
     label,
     kind: 'Link',
-    icon: label === 'Résumé' ? 'pdf' : 'doc',
+    icon: label === 'Resume' ? 'pdf' : 'doc',
     run: () => window.open(href, '_blank', 'noopener,noreferrer'),
     keywords: `${label} ${keywords}`.toLowerCase(),
   })
@@ -255,7 +255,7 @@ function buildIndex(): Hit[] {
     app('Press', 'press', 'press', 'news publication article'),
     app('Mail', 'mail', 'contact', 'contact email hire'),
     app('Terminal', 'terminal', 'terminal', 'cli shell command'),
-    ext('Résumé', links.resume, 'resume cv pdf'),
+    ext('Resume', links.resume, 'resume cv pdf'),
     ext('GitHub', links.github, 'code'),
     ext('LinkedIn', links.linkedin),
     ...allProjects.map<Hit>(p => ({

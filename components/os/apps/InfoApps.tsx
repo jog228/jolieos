@@ -33,7 +33,7 @@ export function WelcomeApp() {
         <OSButton onClick={() => open('experience')}>Experience</OSButton>
         <OSButton onClick={() => open('projects')}>Projects</OSButton>
         <OSLinkButton href={links.resume}>
-          Résumé <ArrowUpRight size={12} aria-hidden />
+          Resume <ArrowUpRight size={12} aria-hidden />
         </OSLinkButton>
         <OSButton onClick={() => open('contact')}>Say hello</OSButton>
         <OSButton onClick={() => open('records')}>Records</OSButton>

@@ -118,7 +118,7 @@ const HELP = `available commands:
   experience        list where I've worked
   projects          list projects
   skills            print my skills
-  resume            open my résumé
+  resume            open my resume
   contact           how to reach me
   play              put on a record
   theme             toggle light / dark mode

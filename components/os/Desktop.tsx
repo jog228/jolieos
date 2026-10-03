@@ -77,7 +77,7 @@ const DESKTOP_ITEMS: DesktopItem[] = [
   { label: 'Projects', icon: 'folder', app: 'projects' },
   { label: 'Leadership', icon: 'trophy', app: 'leadership' },
   { label: 'Press', icon: 'press', app: 'press' },
-  { label: 'Résumé.pdf', icon: 'pdf', href: links.resume },
+  { label: 'Resume.pdf', icon: 'pdf', href: links.resume },
 ]
 
 function Desktop() {
@@ -190,7 +190,7 @@ const DOCK_APPS: DockApp[] = [
   { label: 'Skills', icon: 'gear', app: 'skills' },
   { label: 'Mail', icon: 'mail', app: 'contact' },
   { label: 'Terminal', icon: 'terminal', app: 'terminal' },
-  { label: 'Résumé', icon: 'pdf', href: links.resume, desktopOnly: true },
+  { label: 'Resume', icon: 'pdf', href: links.resume, desktopOnly: true },
 ]
 
 function Dock() {
