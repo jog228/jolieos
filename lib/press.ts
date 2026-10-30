@@ -13,6 +13,15 @@ export interface PressItem {
 export const press: PressItem[] = [
   {
     publication: "The Brown & White",
+    title: "AI sparks global concern, while AI Club embraces possibilities",
+    date: "Oct 2026",
+    pullQuote:
+      "Now it's the soft skills and the translation and the things that go in between writing the code that are important.",
+    attribution: "Jolie Goldstein, AI Club president",
+    href: "https://thebrownandwhite.com/2026/10/15/ai-sparks-global-concern-while-ai-club-embraces-possibilities/",
+  },
+  {
+    publication: "The Brown & White",
     title: "Jolie Goldstein turns coding passion into global impact",
     date: "Nov 2025",
     pullQuote:
