@@ -7,7 +7,7 @@ export const profile = {
   name: 'Jolie Goldstein',
   role: 'Full-Stack Developer · UX & HCI Research',
   tagline:
-    'I build full-stack products end to end and ground the decisions in real user research, especially where people meet AI.',
+    'I love the full life cycle of software, from the first idea to testing it with the people who will use it. I design it and I build it.',
   // One line a recruiter can read in two seconds: school, year, what I want
   school: 'Computer Science at Lehigh University · Class of 2028',
   availability: 'Available for Summer 2027 internships',
@@ -50,9 +50,10 @@ export const proofPoints: {
 
 // Each string is one paragraph in About_Me.txt
 export const about: string[] = [
-  "I'm a computer science student at Lehigh University, minoring in data science and graphic design. I build full-stack products and study how people actually use them, especially when AI is part of the experience. I like writing the code, but I care just as much about what happens when someone who isn't me starts using it.",
-  "This past summer I interned at the Federal Reserve Board, where I scoped and built Knowledge Exchange, a full-stack Flask and PostgreSQL prototype for internal knowledge-sharing, taking it from a design document through a working application to usability testing with real users. The team kept it as the foundation for a future version. Through Lehigh's Global Social Impact Fellowship, I co-built iCodePal, an AI coding tutor Chrome extension built for computer science classrooms in India; I own the teacher dashboard, the student code-generation workflows, and the Firebase data layer. Across all of it, I've learned to care about the reasoning behind a decision as much as the decision itself, and to design for the person actually using the product rather than the one I imagined.",
-  "Now I'm a research assistant in Lehigh's DiFranzo Lab, where I'm designing a design fiction study that uses a speculative AI dating-profile experience to explore how people react when AI steps into personal self-presentation. I'm also a grader for CSE 216 Software Engineering. That research, along with being named a Lehigh nominee for the Goldwater Scholarship as a sophomore, is pushing me toward a PhD or Master's in HCI, human-centered computing, or information science. I also serve as president of Lehigh's AI Club, one of the largest student organizations on campus.",
+  "What I like most is the full life cycle of building software: the idea, working out how it will come together, building it, and testing it with the people who will use it. That is what I have done in my classes, my projects, and my internship, and it is the work I want to keep doing.",
+  "I am just as interested in UX, human-computer interaction, and human-AI interaction: how people experience software and the AI inside it. That is why I study computer science at Lehigh University with minors in data science and graphic design. People call that combination a unicorn, someone who can design it and build it. That is how I think of myself.",
+  "This past summer at the Federal Reserve Board I got to do the whole cycle on one product. I scoped and built Knowledge Exchange, a full-stack Flask and PostgreSQL prototype for internal knowledge-sharing, and took it from a design document to a working application to usability testing with real users. The team kept it as the foundation for a future version. Through Lehigh's Global Social Impact Fellowship, I co-built iCodePal, an AI coding tutor Chrome extension for computer science classrooms in India. I own the teacher dashboard, the student code-generation workflows, and the Firebase data layer, and I sat with 30 teachers in southern India while they tried it. Watching someone else use what I built is still my favorite part.",
+  "Now I'm a research assistant in Lehigh's DiFranzo Lab, where I'm designing a design fiction study that uses a speculative AI dating-profile experience to explore how people react when AI steps into personal self-presentation. I'm also a grader for CSE 216 Software Engineering and president of Lehigh's AI Club, one of the largest student organizations on campus. That research, along with being named a Lehigh nominee for the Goldwater Scholarship as a sophomore, is pushing me toward a PhD or Master's in HCI, human-centered computing, or information science.",
   'Outside of work, I like to stay active, collect vinyl records, and read murder thrillers.',
 ]
 

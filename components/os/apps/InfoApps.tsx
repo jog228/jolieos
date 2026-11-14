@@ -54,9 +54,9 @@ export function WelcomeApp() {
         <OSLinkButton href={links.resume} variant="primary" className="px-4">
           View resume <ArrowUpRight size={12} aria-hidden />
         </OSLinkButton>
+        <OSButton onClick={() => open('about')}>About me</OSButton>
         <OSButton onClick={() => open('projects')}>Projects</OSButton>
         <OSButton onClick={() => open('experience')}>Experience</OSButton>
-        <OSButton onClick={() => open('about')}>About me</OSButton>
         <OSButton onClick={() => open('leadership')}>Leadership</OSButton>
         <OSButton onClick={() => open('contact')}>Contact</OSButton>
       </div>
@@ -94,16 +94,45 @@ const ABOUT_LINKS: LinkMap = {
   'Global Social Impact Fellowship': { app: 'experienceDetail', param: 'creative-inquiry' },
 }
 
+// The paragraph in `about` (lib/content.ts) that the Federal Reserve photo sits beside
+const FED_PARAGRAPH = about.findIndex(p => p.includes('Federal Reserve Board'))
+
 export function AboutApp() {
   const words = about.join(' ').split(/\s+/).length
   return (
     <div className="flex min-h-full flex-col">
       <article className="flex-1 px-6 py-6 sm:px-9 sm:py-8">
         <Label>~/Desktop/About_Me.txt</Label>
-        <h3 className="mt-2 font-display text-[2.25rem] font-bold leading-none tracking-tight">About me</h3>
+        <div className="mt-3 flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/headshot.jpeg"
+            alt="Jolie Goldstein"
+            width={88}
+            height={88}
+            className="h-[88px] w-[88px] shrink-0 rounded-full border border-hairline object-cover"
+          />
+          <h3 className="font-display text-[2.25rem] font-bold leading-none tracking-tight">About me</h3>
+        </div>
         <div className="mt-6 max-w-[60ch] space-y-5 text-[15.5px] leading-[1.75]">
           {about.map((p, i) => (
-            <p key={i}>
+            <p key={i} className={i === FED_PARAGRAPH ? 'flow-root' : undefined}>
+              {i === FED_PARAGRAPH && (
+                <span className="float-right mb-2 ml-4 mt-1.5 block w-[130px] sm:ml-5 sm:w-[170px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/jolie-federal-reserve.jpeg"
+                    alt="Jolie standing in front of the Federal Reserve Board of Governors seal"
+                    width={768}
+                    height={1024}
+                    loading="lazy"
+                    className="h-auto w-full rounded-lg border border-hairline"
+                  />
+                  <span className="mt-1.5 block font-aqua text-[11px] leading-snug text-muted">
+                    At the Federal Reserve Board in Washington, DC, Summer 2026
+                  </span>
+                </span>
+              )}
               <Linkified text={p} map={ABOUT_LINKS} />
             </p>
           ))}
