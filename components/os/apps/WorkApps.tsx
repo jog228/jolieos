@@ -1,11 +1,12 @@
 'use client'
 
 // Experience (calendar split view), Experience detail, Projects (shop grid),
-// Project case study, Image preview, Records (turntable)
+// Project case study, Image preview, Records (turntable + record crate)
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
 import { experience, type Experience } from '@/lib/experience'
+import { records, type VinylRecord } from '@/lib/records'
 import { cn } from '@/lib/utils'
 import { AppIcon } from '../AppIcon'
 import { useOS } from '../OSProvider'
@@ -50,6 +51,17 @@ function DateBadge({ dates, size = 'md' }: { dates: string; size?: 'md' | 'lg' }
         {b.body}
       </span>
     </span>
+  )
+}
+
+// Long copy is stored as one string; a blank line starts a new paragraph.
+function Paragraphs({ text, className }: { text: string; className?: string }) {
+  return (
+    <div className={cn('max-w-[64ch] space-y-3.5 text-[15px] leading-[1.7]', className)}>
+      {text.split(/\n\s*\n/).map((para, i) => (
+        <p key={i}>{para}</p>
+      ))}
+    </div>
   )
 }
 
@@ -114,7 +126,7 @@ export function ExperienceApp() {
           </div>
         )}
       </div>
-      <StatusBar>{experience.length} engagements</StatusBar>
+      <StatusBar>{experience.length} roles · select one to read more</StatusBar>
     </div>
   )
 }
@@ -134,10 +146,28 @@ function ExperienceBody({ exp }: { exp: Experience }) {
         </div>
       </div>
 
-      <p className="mt-5 max-w-[62ch] text-[14.5px] leading-[1.75]">{exp.description}</p>
+      {exp.highlights?.length ? (
+        <ul className="mt-5 max-w-[62ch] space-y-2">
+          {exp.highlights.map(h => (
+            <li key={h} className="flex gap-2.5 text-[14px] leading-snug">
+              <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              {h}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <p
+        className={cn(
+          'max-w-[62ch] leading-[1.7]',
+          exp.highlights?.length ? 'mt-5 border-t border-hairline pt-4 text-[13.5px] text-muted' : 'mt-5 text-[14.5px]',
+        )}
+      >
+        {exp.description}
+      </p>
 
       <div className="mt-6 rounded-lg border border-hairline bg-paper p-4">
-        <Label className="mb-3">Projects</Label>
+        <Label className="mb-3">{exp.projects.length ? 'Case studies' : 'Projects'}</Label>
         {exp.projects.length ? (
           <ul className="flex flex-wrap gap-2">
             {exp.projects.map(p => (
@@ -158,7 +188,7 @@ function ExperienceBody({ exp }: { exp: Experience }) {
             ))}
           </ul>
         ) : (
-          <p className="font-aqua text-[12.5px] text-muted">Research in progress. Nothing to ship yet; check back soon.</p>
+          <p className="font-aqua text-[12.5px] text-muted">Study in design. The write-up will live here once there is one.</p>
         )}
       </div>
     </div>
@@ -186,20 +216,33 @@ export function ProjectsApp() {
   const { open } = useOS()
   return (
     <div className="flex min-h-full flex-col">
-      <ul className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(140px,1fr))] content-start gap-4 p-4 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:p-5">
+      <ul className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(140px,1fr))] content-start gap-x-4 gap-y-5 p-4 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] sm:p-5">
         {allProjects.map(p => {
-          const cover = p.images?.[0]?.src
+          const cover = p.images?.[0]
           const hue = PROJECT_HUES[p.id]
           return (
             <li key={p.id}>
               <button type="button" onClick={() => open('project', p.id)} className="group block w-full text-center">
                 <span
-                  className="relative mx-auto flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,.18),inset_0_0_0_1px_rgba(0,0,0,.1)] transition-transform group-hover:-translate-y-1"
-                  style={{ background: `linear-gradient(135deg, ${hue?.[0] ?? '#a58bff'}, ${hue?.[1] ?? '#7048e8'})` }}
+                  className="relative mx-auto flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,.18),inset_0_0_0_1px_rgba(0,0,0,.1)] transition-transform group-hover:-translate-y-1"
+                  style={{
+                    background:
+                      cover?.fit === 'contain' && cover.bg
+                        ? cover.bg
+                        : `linear-gradient(135deg, ${hue?.[0] ?? '#a58bff'}, ${hue?.[1] ?? '#7048e8'})`,
+                  }}
                 >
                   {cover ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover} alt="" className="h-full w-full object-cover object-top" loading="lazy" />
+                    <img
+                      src={cover.src}
+                      alt=""
+                      loading="lazy"
+                      className={cn(
+                        'h-full w-full',
+                        cover.fit === 'contain' ? 'object-contain p-3' : 'object-cover object-left-top',
+                      )}
+                    />
                   ) : (
                     <span
                       className={cn(
@@ -210,11 +253,16 @@ export function ProjectsApp() {
                       {projectBadge(p)}
                     </span>
                   )}
-                  <span className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/35 to-transparent" />
+                  {!cover && (
+                    <span className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/35 to-transparent" />
+                  )}
                 </span>
                 <span className="mt-2 block font-aqua text-[13px] font-bold text-ink">{p.title}</span>
                 <span className="block font-aqua text-[11.5px] text-muted">
                   {shortOrg(p.organization)} · {p.year}
+                </span>
+                <span className="mx-auto mt-0.5 block max-w-[22ch] font-aqua text-[11px] leading-snug text-muted">
+                  {p.tags.slice(0, 3).join(' · ')}
                 </span>
               </button>
             </li>
@@ -246,11 +294,30 @@ export function ProjectApp({ id }: { id?: string }) {
           </div>
         </div>
         <p className="mt-5 max-w-[60ch] text-[16px] leading-relaxed">{p.summary}</p>
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {p.tags.map(t => (
-            <Tag key={t}>{t}</Tag>
-          ))}
-        </div>
+
+        {/* At a glance: the three things a skimming reader wants first */}
+        <dl className="mt-5 grid max-w-[68ch] grid-cols-1 gap-x-6 gap-y-3 rounded-lg border border-hairline bg-paper p-4 sm:grid-cols-2">
+          {p.myRole && (
+            <div>
+              <dt><Label>My role</Label></dt>
+              <dd className="mt-1 text-[13.5px] leading-snug">{p.myRole}</dd>
+            </div>
+          )}
+          {p.outcome && (
+            <div>
+              <dt><Label>Outcome</Label></dt>
+              <dd className="mt-1 text-[13.5px] leading-snug">{p.outcome}</dd>
+            </div>
+          )}
+          <div className="sm:col-span-2">
+            <dt><Label>Skills and tools</Label></dt>
+            <dd className="mt-1.5 flex flex-wrap gap-1.5">
+              {p.tags.map(t => (
+                <Tag key={t}>{t}</Tag>
+              ))}
+            </dd>
+          </div>
+        </dl>
         {p.links && p.links.length > 0 && (
           <div className="mt-5 flex flex-wrap gap-2">
             {p.links.map((l, i) => (
@@ -264,41 +331,48 @@ export function ProjectApp({ id }: { id?: string }) {
 
       {/* Body */}
       <div className="flex-1 space-y-8 px-6 py-7 sm:px-9">
-        <section>
-          <Label className="mb-2 text-accent">The problem</Label>
-          <p className="max-w-[64ch] text-[15px] leading-[1.75]">{p.problem}</p>
-        </section>
-
-        <section>
-          <Label className="mb-2 text-accent">The process</Label>
-          <p className="max-w-[64ch] text-[15px] leading-[1.75]">{p.process}</p>
-        </section>
-
         {p.images?.length ? (
           <section>
-            <Label className="mb-3 text-accent">Screens</Label>
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Label className="mb-3 text-accent">{p.images.length > 1 ? 'Screens' : 'Preview'}</Label>
+            <ul className={cn('grid gap-3', p.images.length > 1 ? 'grid-cols-2 sm:grid-cols-3' : 'max-w-[420px] grid-cols-1')}>
               {p.images.map((img, i) => (
                 <li key={img.src}>
                   <button
                     type="button"
                     onClick={() => open('preview', `${p.id}:${i}`)}
                     className="group block w-full overflow-hidden rounded-md bg-surface text-left shadow-[0_1px_4px_rgba(0,0,0,.2),inset_0_0_0_1px_rgba(0,0,0,.1)]"
-                    aria-label={`Open screenshot: ${img.alt}`}
+                    style={img.fit === 'contain' && img.bg ? { background: img.bg } : undefined}
+                    aria-label={`Open image: ${img.alt}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img.src}
                       alt=""
                       loading="lazy"
-                      className="aspect-[4/3] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
+                      className={cn(
+                        'aspect-[4/3] w-full transition-transform duration-300 group-hover:scale-[1.03]',
+                        img.fit === 'contain' ? 'object-contain p-4' : 'object-cover object-left-top',
+                      )}
                     />
                   </button>
                 </li>
               ))}
             </ul>
+            <p className="mt-2 font-aqua text-[11.5px] text-muted">
+              {p.imagesNote ? `${p.imagesNote} ` : ''}Click to enlarge.
+            </p>
           </section>
         ) : null}
+
+        <section>
+          <Label className="mb-2 text-accent">The problem</Label>
+          <Paragraphs text={p.problem} />
+        </section>
+
+        <section>
+          <Label className="mb-2 text-accent">The process</Label>
+          <Paragraphs text={p.process} />
+        </section>
       </div>
 
       <StatusBar>
@@ -346,7 +420,12 @@ export function PreviewApp({ param }: { param?: string }) {
     >
       <div className="flex min-h-0 flex-1 items-center justify-center p-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={img.src} alt={img.alt} className="max-h-full max-w-full rounded shadow-[0_8px_30px_rgba(0,0,0,.5)] object-contain" />
+        <img
+          src={img.src}
+          alt={img.alt}
+          style={img.bg ? { background: img.bg } : undefined}
+          className="max-h-full max-w-full rounded object-contain shadow-[0_8px_30px_rgba(0,0,0,.5)]"
+        />
       </div>
       <div className="os-statusbar flex items-center gap-3 px-3 py-2">
         <OSButton onClick={prev} aria-label="Previous image" className="px-2.5">
@@ -366,107 +445,163 @@ export function PreviewApp({ param }: { param?: string }) {
   )
 }
 
-// ── Records: my projects, pressed to vinyl ───────────────────
+// ── Records ──────────────────────────────────────────────────
+// My actual record collection, in a crate you dig through. The crate is the
+// stacked-sleeve interaction from my Cut-Out Bin case study, built for real
+// and restyled to match JolieOS.
+
+interface Spin {
+  key: string
+  title: string
+  badge: string
+  hue: [string, string]
+  vinylHex?: string
+}
+
+// Sleeve colors: the JolieOS purples, so the crate belongs to this desktop
+const TINTS: { bg: string; ink: string }[] = [
+  { bg: '#7048e8', ink: '#ffffff' }, // accent violet
+  { bg: '#cbb6ff', ink: '#2a1e45' }, // lavender
+  { bg: '#4b2fd6', ink: '#ffffff' }, // indigo
+  { bg: '#2e2150', ink: '#ede6fb' }, // night wallpaper
+  { bg: '#9273f2', ink: '#ffffff' }, // light violet
+]
+
+const recordKey = (r: VinylRecord) => `${r.artist}/${r.title}`
+// Each record keeps one tint no matter how the crate is sorted
+const TINT_OF = new Map(records.map((r, n) => [recordKey(r), TINTS[n % TINTS.length]]))
+
+type DigBy = 'recent' | 'az' | 'year'
+const DIG_BY: { id: DigBy; label: string }[] = [
+  { id: 'recent', label: 'New in' },
+  { id: 'az', label: 'A to Z' },
+  { id: 'year', label: 'Year' },
+]
+
+function sortRecords(by: DigBy) {
+  const list = [...records] // lib/records.ts is already A to Z by artist
+  if (by === 'recent') list.sort((a, b) => b.added.localeCompare(a.added))
+  if (by === 'year') list.sort((a, b) => a.year - b.year)
+  return list
+}
+
+function Turntable({ spin, playing, armAngle }: { spin: Spin; playing: boolean; armAngle: number }) {
+  // Colored pressings get colored grooves; everything else is black vinyl
+  const grooves = spin.vinylHex
+    ? `repeating-radial-gradient(circle at center, ${spin.vinylHex} 0 2px, color-mix(in srgb, ${spin.vinylHex}, #000 14%) 2px 4px)`
+    : 'repeating-radial-gradient(circle at center, #111 0 2px, #1d1d1f 2px 4px), radial-gradient(circle, #222, #000)'
+
+  return (
+    <div
+      className="relative aspect-[5/4] w-[min(280px,74vw)] rounded-xl border border-white/[.06]"
+      style={{
+        background: 'linear-gradient(145deg, #2b2b30, #151517)',
+        boxShadow: '0 12px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06)',
+      }}
+    >
+      {/* Record box: 70% of the plinth width, so 1 SVG unit = 0.7% of the plinth */}
+      <div className="absolute left-[5%] top-[6.25%] aspect-square w-[70%]">
+        {/* Platter + record. Always animated, just paused, so it stops where it is instead of snapping back. */}
+        <div
+          className="os-spin absolute inset-0 rounded-full"
+          style={{
+            animationPlayState: playing ? 'running' : 'paused',
+            background: grooves,
+            boxShadow: '0 6px 18px rgba(0,0,0,.6), inset 0 0 0 2px rgba(0,0,0,.85)',
+          }}
+        >
+          <div
+            className="absolute inset-[32%] flex items-center justify-center rounded-full shadow-[0_0_0_1px_rgba(0,0,0,.25)]"
+            style={{ background: `linear-gradient(135deg, ${spin.hue[0]}, ${spin.hue[1]})` }}
+          >
+            <span
+              className={cn(
+                '-translate-y-[38%] font-display font-black leading-none text-white/95',
+                spin.badge.length > 1 ? 'text-[0.8rem]' : 'text-[1.2rem]',
+              )}
+            >
+              {spin.badge}
+            </span>
+            <span className="absolute h-2 w-2 rounded-full bg-[#111]" />
+          </div>
+          {/* sheen */}
+          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_30deg,transparent_0deg,rgba(255,255,255,.10)_40deg,transparent_80deg,transparent_180deg,rgba(255,255,255,.08)_220deg,transparent_260deg)]" />
+        </div>
+
+        {/* Tonearm. Coordinates: the record is 0..100, centre (50,50).
+            Pivot sits off the platter at (114,10). Stopped (0deg) the arm parks on its
+            rest beside the record; playing, armAngle moves the needle inward per track. */}
+        <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden>
+          {/* static: pivot base + arm rest */}
+          <circle cx="114" cy="10" r="9" fill="#232327" stroke="#3c3c42" strokeWidth="1" />
+          <rect x="110" y="57" width="8" height="5" rx="1.2" fill="#3a3a40" />
+          <g
+            style={{
+              transform: `rotate(${armAngle}deg)`,
+              transformOrigin: '114px 10px',
+              transformBox: 'view-box',
+              transition: 'transform 700ms cubic-bezier(.4,0,.2,1)',
+            }}
+          >
+            {/* counterweight */}
+            <rect x="110" y="-6" width="8" height="9" rx="1.5" fill="#9aa1ab" stroke="#6f757e" strokeWidth=".6" />
+            {/* tube + headshell offset */}
+            <path d="M114 10 L114 62 L110 72" stroke="#d9dce2" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            {/* headshell + cartridge, needle tip at (110,76) */}
+            <rect x="107" y="69" width="6" height="8" rx="1.2" fill="#9aa1ab" transform="rotate(16 110 73)" />
+            <rect x="108.6" y="75" width="2.8" height="2" rx=".5" fill="#c0271c" transform="rotate(16 110 73)" />
+            {/* pivot cap */}
+            <circle cx="114" cy="10" r="4.5" fill="#c9ccd2" stroke="#7a7f88" strokeWidth=".8" />
+          </g>
+        </svg>
+      </div>
+
+      {/* start/stop indicator */}
+      <span
+        className={cn(
+          'absolute bottom-[6%] right-[6%] h-2 w-2 rounded-full transition-colors',
+          playing ? 'bg-[#5fe0b4] shadow-[0_0_6px_#5fe0b4]' : 'bg-white/20',
+        )}
+      />
+    </div>
+  )
+}
+
 export function RecordsApp() {
   const { open } = useOS()
-  const [i, setI] = useState(0)
   const [playing, setPlaying] = useState(true)
-  const p = allProjects[i]
-  const hue = PROJECT_HUES[p.id] ?? ['#a58bff', '#7048e8']
-  const side = (n: number) => `${n < 3 ? 'A' : 'B'}${(n % 3) + 1}`
+  const [digBy, setDigBy] = useState<DigBy>('recent')
+  const crate = useMemo(() => sortRecords(digBy), [digBy])
+  const [pulled, setPulled] = useState(() => recordKey(sortRecords('recent')[0]))
+  const index = Math.max(0, crate.findIndex(r => recordKey(r) === pulled))
+  const rec = crate[index]
+  const tint = TINT_OF.get(recordKey(rec))!
+
+  const spin: Spin = {
+    key: recordKey(rec),
+    title: rec.title,
+    badge: '',
+    hue: [tint.bg, tint.bg],
+    vinylHex: rec.vinylHex,
+  }
 
   // Tonearm angle: 0deg = parked on the rest. While playing, the needle walks
-  // inward one track at a time, like a real record: first track sits in the
-  // outer grooves (18deg), last track just outside the label (35deg).
+  // inward as you move through the crate: the first record sits in the outer
+  // grooves (18deg), the last just outside the label (35deg).
   const ARM_FIRST = 18
   const ARM_LAST = 35
-  const armAngle = playing
-    ? ARM_FIRST + ((ARM_LAST - ARM_FIRST) * i) / Math.max(allProjects.length - 1, 1)
-    : 0
+  const armAngle = playing ? ARM_FIRST + ((ARM_LAST - ARM_FIRST) * index) / Math.max(crate.length - 1, 1) : 0
 
   const step = (d: number) => {
-    setI(n => (n + d + allProjects.length) % allProjects.length)
+    setPulled(recordKey(crate[(index + d + crate.length) % crate.length]))
     setPlaying(true)
   }
 
   return (
-    <div className="grid h-full grid-cols-1 sm:grid-cols-[minmax(250px,46%)_1fr]">
+    <div className="grid h-full grid-cols-1 sm:grid-cols-[minmax(250px,44%)_1fr]">
       {/* Turntable */}
       <div className="relative flex flex-col items-center justify-center gap-4 bg-[radial-gradient(ellipse_at_top,#2c2c30,#101012)] p-6 text-white">
-        {/* Plinth: record on the left, tonearm pivot outside the platter on the right */}
-        <div
-          className="relative aspect-[5/4] w-[min(280px,74vw)] rounded-xl border border-white/[.06]"
-          style={{
-            background: 'linear-gradient(145deg, #2b2b30, #151517)',
-            boxShadow: '0 12px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06)',
-          }}
-        >
-          {/* Record box: 70% of the plinth width, so 1 SVG unit = 0.7% of the plinth */}
-          <div className="absolute left-[5%] top-[6.25%] aspect-square w-[70%]">
-            {/* Platter + record. Always animated, just paused, so it stops where it is instead of snapping back. */}
-            <div
-              className="os-spin absolute inset-0 rounded-full"
-              style={{
-                animationPlayState: playing ? 'running' : 'paused',
-                background:
-                  'repeating-radial-gradient(circle at center, #111 0 2px, #1d1d1f 2px 4px), radial-gradient(circle, #222, #000)',
-                boxShadow: '0 6px 18px rgba(0,0,0,.6), inset 0 0 0 2px #000',
-              }}
-            >
-              <div
-                className="absolute inset-[32%] flex items-center justify-center rounded-full"
-                style={{ background: `linear-gradient(135deg, ${hue[0]}, ${hue[1]})` }}
-              >
-                <span
-                  className={cn(
-                    '-translate-y-[38%] font-display font-black leading-none text-white/95',
-                    projectBadge(p).length > 1 ? 'text-[0.8rem]' : 'text-[1.2rem]',
-                  )}
-                >
-                  {projectBadge(p)}
-                </span>
-                <span className="absolute h-2 w-2 rounded-full bg-[#111]" />
-              </div>
-              {/* sheen */}
-              <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_30deg,transparent_0deg,rgba(255,255,255,.10)_40deg,transparent_80deg,transparent_180deg,rgba(255,255,255,.08)_220deg,transparent_260deg)]" />
-            </div>
-
-            {/* Tonearm. Coordinates: the record is 0..100, centre (50,50).
-                Pivot sits off the platter at (114,10). Stopped (0deg) the arm parks on its
-                rest beside the record; playing, armAngle moves the needle inward per track. */}
-            <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden>
-              {/* static: pivot base + arm rest */}
-              <circle cx="114" cy="10" r="9" fill="#232327" stroke="#3c3c42" strokeWidth="1" />
-              <rect x="110" y="57" width="8" height="5" rx="1.2" fill="#3a3a40" />
-              <g
-                style={{
-                  transform: `rotate(${armAngle}deg)`,
-                  transformOrigin: '114px 10px',
-                  transformBox: 'view-box',
-                  transition: 'transform 700ms cubic-bezier(.4,0,.2,1)',
-                }}
-              >
-                {/* counterweight */}
-                <rect x="110" y="-6" width="8" height="9" rx="1.5" fill="#9aa1ab" stroke="#6f757e" strokeWidth=".6" />
-                {/* tube + headshell offset */}
-                <path d="M114 10 L114 62 L110 72" stroke="#d9dce2" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                {/* headshell + cartridge, needle tip at (110,76) */}
-                <rect x="107" y="69" width="6" height="8" rx="1.2" fill="#9aa1ab" transform="rotate(16 110 73)" />
-                <rect x="108.6" y="75" width="2.8" height="2" rx=".5" fill="#c0271c" transform="rotate(16 110 73)" />
-                {/* pivot cap */}
-                <circle cx="114" cy="10" r="4.5" fill="#c9ccd2" stroke="#7a7f88" strokeWidth=".8" />
-              </g>
-            </svg>
-          </div>
-
-          {/* start/stop indicator */}
-          <span
-            className={cn(
-              'absolute bottom-[6%] right-[6%] h-2 w-2 rounded-full transition-colors',
-              playing ? 'bg-[#5fe0b4] shadow-[0_0_6px_#5fe0b4]' : 'bg-white/20',
-            )}
-          />
-        </div>
+        <Turntable spin={spin} playing={playing} armAngle={armAngle} />
 
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => step(-1)} aria-label="Previous record" className="rounded-full p-2 text-white/80 hover:bg-white/10">
@@ -484,46 +619,176 @@ export function RecordsApp() {
             <SkipForward size={16} aria-hidden />
           </button>
         </div>
-      </div>
 
-      {/* Crate / tracklist */}
-      <div className="flex min-h-0 flex-col bg-paper">
-        <div className="border-b border-hairline px-5 py-4">
-          <Label>Now spinning · {side(i)}</Label>
-          <p className="mt-1 font-display text-2xl font-bold leading-tight">{p.title}</p>
-          <p className="font-aqua text-[12.5px] text-muted">
-            {shortOrg(p.organization)} · {p.year}
-          </p>
-          <OSButton variant="primary" className="mt-3" onClick={() => open('project', p.id)}>
-            Read the liner notes
-          </OSButton>
-        </div>
-        <ol className="os-scroll min-h-0 flex-1 overflow-auto py-1" aria-label="Tracklist">
-          {allProjects.map((t, n) => (
-            <li key={t.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  setI(n)
-                  setPlaying(true)
-                }}
-                aria-current={n === i}
-                className={cn(
-                  'flex w-full items-center gap-3 px-5 py-2 text-left font-aqua text-[13px]',
-                  n === i ? 'bg-gradient-to-b from-[#a58bff] to-[#7048e8] text-white' : 'hover:bg-canvas',
-                )}
-              >
-                <span className={cn('w-6 font-mono text-[11px]', n === i ? 'text-white/80' : 'text-muted')}>{side(n)}</span>
-                <span className="flex-1 truncate font-medium">{t.title}</span>
-                <span className={cn('text-[11.5px]', n === i ? 'text-white/80' : 'text-muted')}>{t.year}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        <p className="border-t border-hairline px-5 py-2 font-aqua text-[11.5px] text-muted">
-          My projects, pressed to vinyl. I collect the real ones too.
+        <p className="max-w-full text-center font-aqua" aria-live="polite">
+          <span className="block text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/50">
+            {playing ? 'Now spinning' : 'Paused'}
+          </span>
+          <span className="mt-0.5 block truncate text-[13px] font-bold text-white/95">{rec.title}</span>
+          <span className="block truncate text-[12px] text-white/65">{rec.artist}</span>
         </p>
       </div>
+
+      <Crate
+        crate={crate}
+        pulled={pulled}
+        digBy={digBy}
+        onDigBy={setDigBy}
+        onPull={key => {
+          setPulled(key)
+          setPlaying(true)
+        }}
+        onOpenCaseStudy={() => open('project', 'cut-out-bin')}
+      />
+    </div>
+  )
+}
+
+// The crate: sleeves stacked edge-on. Pull one forward to read it.
+const SLEEVE_H = 46
+const PULLED_H = 176
+const OVERLAP = 12
+
+function Crate({
+  crate,
+  pulled,
+  digBy,
+  onDigBy,
+  onPull,
+  onOpenCaseStudy,
+}: {
+  crate: VinylRecord[]
+  pulled: string
+  digBy: DigBy
+  onDigBy: (d: DigBy) => void
+  onPull: (key: string) => void
+  onOpenCaseStudy: () => void
+}) {
+  const pulledRef = useRef<HTMLButtonElement>(null)
+  const pulledIdx = crate.findIndex(r => recordKey(r) === pulled)
+  const artists = new Set(records.map(r => r.artist)).size
+  const years = records.map(r => r.year)
+
+  // Keep the pulled sleeve in view when stepping with the turntable buttons.
+  // Wait for the sleeve to finish opening so its full height is measured.
+  useEffect(() => {
+    const t = setTimeout(() => pulledRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 380)
+    return () => clearTimeout(t)
+  }, [pulled, digBy])
+
+  return (
+    <div className="flex min-h-0 flex-col bg-canvas text-ink">
+      <div className="os-statusbar flex flex-wrap items-center justify-between gap-2 !border-t-0 border-b border-[var(--chrome-border)] px-4 py-2">
+        <Label className="!text-[var(--chrome-title)]">My crate</Label>
+        <div className="flex items-center gap-2">
+          <span className="font-aqua text-[11px] text-[var(--chrome-title)] opacity-70">Dig by</span>
+          <div
+            role="group"
+            aria-label="Dig by"
+            className="inline-flex overflow-hidden rounded-md shadow-[0_1px_2px_rgba(0,0,0,.2),inset_0_0_0_1px_rgba(0,0,0,.25)]"
+          >
+            {DIG_BY.map(d => (
+              <button
+                key={d.id}
+                type="button"
+                aria-pressed={digBy === d.id}
+                onClick={() => onDigBy(d.id)}
+                className={cn(
+                  'border-l border-black/15 px-2.5 py-[3px] font-aqua text-[11.5px] first:border-l-0',
+                  digBy === d.id
+                    ? 'bg-gradient-to-b from-[#c7b5ff] via-[#9273f2] to-[#7048e8] text-white [text-shadow:0_-1px_0_rgba(0,0,0,.25)]'
+                    : 'bg-gradient-to-b from-white to-[#e4e4e4] text-[#1d1d1f] hover:to-[#d8d8d8]',
+                )}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ol aria-label="Record collection" className="os-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3.5 pb-5 pt-4">
+        {crate.map((r, idx) => {
+          const key = recordKey(r)
+          const isPulled = key === pulled
+          const tint = TINT_OF.get(key)!
+          // Sleeves above the pulled one tuck under it; sleeves below stack downward
+          const zIndex = isPulled ? 100 : idx < pulledIdx ? idx + 1 : crate.length + 20 - idx
+          return (
+            <li key={key} className="relative" style={{ marginBottom: -OVERLAP, zIndex }}>
+              <button
+                ref={isPulled ? pulledRef : undefined}
+                type="button"
+                aria-expanded={isPulled}
+                onClick={() => onPull(key)}
+                className="os-sleeve relative block w-full overflow-hidden text-left"
+                style={{
+                  height: isPulled ? PULLED_H : SLEEVE_H,
+                  background: `linear-gradient(180deg, ${tint.bg}, color-mix(in srgb, ${tint.bg}, #000 16%))`,
+                  color: tint.ink,
+                  borderRadius: '10px 10px 4px 4px',
+                  boxShadow: isPulled
+                    ? '0 8px 24px rgba(30,16,70,.45), 0 2px 6px rgba(30,16,70,.3), inset 0 0 0 1px rgba(0,0,0,.28)'
+                    : '0 3px 8px rgba(30,16,70,.3), inset 0 0 0 1px rgba(0,0,0,.28)',
+                }}
+              >
+                {/* Aqua gloss along the top edge */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 h-[22px] bg-gradient-to-b from-white/30 to-transparent"
+                />
+
+                {isPulled ? (
+                  <>
+                    {/* the record, sliding out of its sleeve */}
+                    <span
+                      aria-hidden
+                      className="absolute -right-[58px] top-1/2 h-[150px] w-[150px] -translate-y-1/2 rounded-full"
+                      style={{
+                        background: r.vinylHex
+                          ? `repeating-radial-gradient(circle, ${r.vinylHex} 0 2px, color-mix(in srgb, ${r.vinylHex}, #000 14%) 2px 4px)`
+                          : 'repeating-radial-gradient(circle, #131313 0 2px, #222 2px 4px)',
+                        boxShadow: '0 4px 14px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.6)',
+                      }}
+                    >
+                      <span className="absolute inset-[34%] rounded-full bg-[#f5f6f8] shadow-[inset_0_0_0_1px_rgba(0,0,0,.25)]" />
+                      <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#111]" />
+                    </span>
+
+                    <span className="absolute left-4 top-3 font-aqua text-[10.5px] font-bold uppercase tracking-[0.08em] opacity-75">
+                      No. {String(idx + 1).padStart(2, '0')} of {crate.length}
+                    </span>
+                    <span className="absolute inset-x-4 bottom-3.5 block pr-[92px]">
+                      <span className="block font-display text-[22px] font-bold leading-[1.1] tracking-tight">{r.artist}</span>
+                      <span className="mt-1 block font-aqua text-[13px] font-bold leading-snug">{r.title}</span>
+                      <span className="mt-1.5 block font-aqua text-[11.5px] opacity-80">
+                        {r.year} · {r.format}
+                        {r.vinyl ? ` · ${r.vinyl} vinyl` : ''}
+                      </span>
+                    </span>
+                  </>
+                ) : (
+                  <span className="absolute inset-x-3.5 top-[8px] flex items-baseline justify-between gap-3">
+                    <span className="truncate font-aqua text-[12.5px] font-bold">{r.title}</span>
+                    <span className="shrink-0 font-aqua text-[11px] opacity-80">{r.artist}</span>
+                  </span>
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+
+      <StatusBar>
+        <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
+          <span>
+            {records.length} records · {artists} artists · {Math.min(...years)} to {Math.max(...years)}
+          </span>
+          <button type="button" onClick={onOpenCaseStudy} className="text-accent hover:underline">
+            How I designed this crate →
+          </button>
+        </span>
+      </StatusBar>
     </div>
   )
 }

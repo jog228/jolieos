@@ -83,6 +83,9 @@ export function ContactApp() {
         <OSLinkButton href={links.linkedin}>LinkedIn</OSLinkButton>
         <OSLinkButton href={links.github}>GitHub</OSLinkButton>
       </div>
+      <p className="font-aqua text-[11.5px] leading-snug text-muted">
+        Send opens your mail app with this message filled in. No mail app set up? Copy my address above.
+      </p>
     </form>
   )
 }
@@ -305,7 +308,7 @@ const TRASH: TrashItem[] = [
   {
     name: 'Drupal_Knowledge_Tool',
     icon: 'folder',
-    note: 'Retired in 2026. I scoped and built its replacement during my Federal Reserve internship.',
+    note: 'Due for retirement. I scoped and built a working prototype of its replacement during my Federal Reserve internship.',
     action: { label: 'Open Intelswap', app: 'project', param: 'intelswap' },
   },
   {

@@ -53,7 +53,7 @@ export function findExperience(id?: string) {
 export function getMeta(app: AppId, param?: string): AppMeta {
   switch (app) {
     case 'welcome':
-      return { title: 'Welcome', icon: 'readme', w: 560, h: 540 }
+      return { title: 'Welcome', icon: 'readme', w: 660, h: 590 }
     case 'about':
       return { title: 'About Me.txt', icon: 'doc', w: 640, h: 580 }
     case 'experience':
@@ -63,10 +63,10 @@ export function getMeta(app: AppId, param?: string): AppMeta {
       return { title: exp ? shortOrg(exp.organization) : 'Experience', icon: 'folder', w: 640, h: 540 }
     }
     case 'projects':
-      return { title: 'Projects', icon: 'folder', w: 720, h: 500 }
+      return { title: 'Projects', icon: 'folder', w: 720, h: 580 }
     case 'project': {
       const p = findProject(param)
-      return { title: p?.title ?? 'Project', icon: 'app', w: 760, h: 620 }
+      return { title: p?.title ?? 'Project', icon: 'app', w: 780, h: 640 }
     }
     case 'preview': {
       const p = findProject((param ?? '').split(':')[0])
@@ -75,7 +75,7 @@ export function getMeta(app: AppId, param?: string): AppMeta {
     case 'skills':
       return { title: 'Skills', icon: 'gear', w: 520, h: 440 }
     case 'leadership':
-      return { title: 'Leadership', icon: 'trophy', w: 540, h: 430 }
+      return { title: 'Leadership', icon: 'trophy', w: 560, h: 470 }
     case 'press':
       return { title: 'Press', icon: 'press', w: 620, h: 540 }
     case 'contact':
@@ -85,7 +85,7 @@ export function getMeta(app: AppId, param?: string): AppMeta {
     case 'trash':
       return { title: 'Trash', icon: 'trash', w: 500, h: 340 }
     case 'records':
-      return { title: 'Records', icon: 'vinyl', w: 640, h: 420 }
+      return { title: 'Records', icon: 'vinyl', w: 780, h: 540 }
   }
 }
 
@@ -97,6 +97,7 @@ export const PROJECT_HUES: Record<string, [string, string]> = {
   '81-north': ['#7cc4ff', '#1f5fbf'],
   'your-fine-trip': ['#ffd27a', '#d39614'],
   'cut-out-bin': ['#f2a65a', '#b5481f'],
+  atmoshear: ['#8ea2ff', '#27315f'],
 }
 
 // "Federal Reserve Board · Division of R&S" → "Federal Reserve Board"

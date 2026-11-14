@@ -11,7 +11,7 @@ const BOOT_LOG = [
   'Starting desktop',
 ]
 
-const DURATION = 1900 // ms
+const DURATION = 1200 // ms. Short on purpose: visitors are here for the work
 
 // Shown once per browser session. An inline script in layout.tsx sets
 // html[data-booted] before paint for returning visitors, and CSS hides

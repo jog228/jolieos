@@ -1,34 +1,42 @@
-# Jolie Goldstein — Portfolio
+# JolieOS
 
-Personal portfolio site built with [Next.js](https://nextjs.org) and TypeScript, styled with
-[Tailwind CSS](https://tailwindcss.com) and animated with [Framer Motion](https://www.framer.com/motion/).
-Deployed on [Vercel](https://vercel.com).
+My portfolio, built as a desktop you can click around: [joliegoldstein.com](https://joliegoldstein.com).
 
-## Getting started
+Windows drag, resize, minimize, and stack. There is a dock, a menu bar, Spotlight search (`⌘K`), a
+working terminal (`help`), light and dark themes, and a turntable that plays my projects as records.
+On phones the same apps open full screen.
+
+Built with [Next.js](https://nextjs.org) (App Router), React, and TypeScript, styled with
+[Tailwind CSS](https://tailwindcss.com), animated with [Framer Motion](https://www.framer.com/motion/),
+and deployed on [Vercel](https://vercel.com).
+
+## Things worth a look
+
+- **A small window manager.** `components/os/OSProvider.tsx` holds every open window in one reducer:
+  open, focus, minimize, zoom, move, resize, and z-order.
+- **Deep links.** Each window has a URL, such as `/#project/intelswap`, and the hash follows the
+  focused window so any view can be shared.
+- **Content is data.** All copy lives in `lib/`. The apps, Spotlight, and the terminal read from the
+  same files, so adding a project in one place updates all of them.
+- **Accessibility.** Keyboard navigation for menus, tabs, and Spotlight; labelled dialogs; visible
+  focus states; and reduced-motion support.
+- **No image requests for icons.** Every icon is inline SVG (`components/os/AppIcon.tsx`).
+
+## Project structure
+
+- `app/`: root layout, metadata, global styles, and the generated Open Graph image
+- `components/os/`: the desktop. `Desktop.tsx` (desktop, dock), `MenuBar.tsx` (menus, Spotlight),
+  `Window.tsx`, `OSProvider.tsx` (window manager), `registry.ts` (every app and its default size)
+- `components/os/apps/`: what renders inside each window
+- `lib/`: site content. `content.ts` (profile, about, skills), `experience.ts` (roles, projects,
+  leadership), `press.ts`
+- `providers/`: theme (light and dark)
+
+## Run it locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the site.
-
-## Project structure
-
-- `app/` — Next.js App Router pages, root layout, and metadata (SEO, Open Graph, Twitter card)
-- `components/sections/` — the page sections (Hero, About, Experience, Press, Skills, Contact). Experience is a unified timeline: each entry is a role/engagement, with its projects nested inside it.
-- `components/layout/` — shared layout components (header, footer, container)
-- `components/ui/` — small reusable UI primitives (e.g. scroll-triggered reveal animation)
-- `lib/` — content data for the site (experience/projects, press mentions) plus shared utilities
-- `providers/` — React context providers (theme/dark-mode)
-
-## Environment variables
-
-`env.example` lists `GITHUB_USERNAME` and `GITHUB_TOKEN`. These are currently unused by the
-codebase — no `.env` file is required to run the site locally.
-
-## Build
-
-```bash
-npm run build
-```
+Open [http://localhost:3000](http://localhost:3000). No environment variables are needed.

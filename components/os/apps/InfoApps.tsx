@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 import { ArrowUpRight } from 'lucide-react'
-import { about, links, profile, skillGroups } from '@/lib/content'
+import { about, links, profile, proofPoints, skillGroups } from '@/lib/content'
 import { leadership } from '@/lib/experience'
 import { press } from '@/lib/press'
 import { cn } from '@/lib/utils'
@@ -16,32 +16,54 @@ import { Label, Linkified, OSButton, OSLinkButton, StatusBar, type LinkMap } fro
 export function WelcomeApp() {
   const { open, isMobile } = useOS()
   return (
-    <div className="p-6 sm:p-7">
-      <Label>Welcome to JolieOS</Label>
-      <p className="mt-3 font-display text-3xl font-bold leading-tight tracking-tight sm:text-[2.1rem]">
-        Hi, I&apos;m Jolie. This desktop is my portfolio.
-      </p>
-      <p className="mt-3 text-[15px] leading-relaxed text-ink">{profile.tagline}</p>
-
-      <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas px-3 py-1 font-aqua text-[12px] text-muted">
-        <span aria-hidden className="os-blink inline-block h-1.5 w-1.5 rounded-full bg-[#3fbf3f]" />
-        {profile.availability}
-      </p>
-
-      <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-        <OSButton variant="primary" onClick={() => open('about')}>About me</OSButton>
-        <OSButton onClick={() => open('experience')}>Experience</OSButton>
-        <OSButton onClick={() => open('projects')}>Projects</OSButton>
-        <OSLinkButton href={links.resume}>
-          Resume <ArrowUpRight size={12} aria-hidden />
-        </OSLinkButton>
-        <OSButton onClick={() => open('contact')}>Say hello</OSButton>
-        <OSButton onClick={() => open('records')}>Records</OSButton>
+    <div className="p-5 sm:px-7 sm:py-6">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <Label>Welcome to JolieOS</Label>
+        <p className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas px-2.5 py-0.5 font-aqua text-[11.5px] text-muted">
+          <span aria-hidden className="os-blink inline-block h-1.5 w-1.5 rounded-full bg-[#3fbf3f]" />
+          {profile.availability}
+        </p>
       </div>
 
-      <div className="mt-6 border-t border-hairline pt-4">
-        <Label className="mb-2">How to use</Label>
-        <ul className="space-y-1 text-[13.5px] leading-relaxed text-muted">
+      <h3 className="mt-3 font-display text-[1.7rem] font-bold leading-[1.15] tracking-tight sm:text-[2rem]">
+        Hi, I&apos;m Jolie. This desktop is my portfolio.
+      </h3>
+      <p className="mt-2 font-aqua text-[12.5px] font-bold text-accent">{profile.school}</p>
+      <p className="mt-2 text-[14.5px] leading-relaxed text-ink">{profile.tagline}</p>
+
+      {/* The short version: three facts, each opening the window that backs it up */}
+      <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {proofPoints.map(pt => (
+          <li key={pt.label} className="flex">
+            <button
+              type="button"
+              onClick={() => open(pt.app, pt.param)}
+              className="os-card group flex w-full flex-col rounded-lg border border-hairline bg-canvas p-3 text-left"
+            >
+              <span className="flex items-center justify-between gap-1 font-aqua text-[11px] font-bold uppercase tracking-[0.05em] text-muted group-hover:text-accent">
+                {pt.label}
+                <ArrowUpRight size={11} aria-hidden className="shrink-0 opacity-50 group-hover:opacity-100" />
+              </span>
+              <span className="mt-1.5 text-[12.5px] leading-snug text-ink">{pt.text}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <OSLinkButton href={links.resume} variant="primary" className="px-4">
+          View resume <ArrowUpRight size={12} aria-hidden />
+        </OSLinkButton>
+        <OSButton onClick={() => open('projects')}>Projects</OSButton>
+        <OSButton onClick={() => open('experience')}>Experience</OSButton>
+        <OSButton onClick={() => open('about')}>About me</OSButton>
+        <OSButton onClick={() => open('leadership')}>Leadership</OSButton>
+        <OSButton onClick={() => open('contact')}>Contact</OSButton>
+      </div>
+
+      <div className="mt-4 border-t border-hairline pt-3">
+        <Label className="mb-1.5">How to use</Label>
+        <ul className="space-y-0.5 text-[12.5px] leading-relaxed text-muted">
           {isMobile ? (
             <li>Tap an icon or the dock to open things. Close windows with the red button.</li>
           ) : (
@@ -177,6 +199,7 @@ export function LeadershipApp() {
             <div className="min-w-0 flex-1">
               <p className="font-display text-lg font-semibold leading-snug">{item.role}</p>
               <p className="text-[14px] text-muted">{item.organization}</p>
+              {item.note && <p className="mt-1 max-w-[46ch] text-[13px] leading-snug text-ink">{item.note}</p>}
             </div>
             <p className="shrink-0 pt-1 text-right font-aqua text-[11.5px] text-muted">
               {item.dates}

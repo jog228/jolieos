@@ -3,7 +3,7 @@
 // Glossy Mac OS X (Aqua-era) style icons, drawn as inline SVG so they stay
 // sharp at any size and ship with zero image requests.
 
-import { useId } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 export type IconName =
   | 'readme'
@@ -35,6 +35,13 @@ export function AppIcon({ name, size = 48, className, letter, hue }: Props) {
   const uid = useId().replace(/:/g, '')
   const id = (s: string) => `${uid}-${s}`
   const url = (s: string) => `url(#${id(s)})`
+
+  // The calendar icon shows today's date. Read the clock after mount only:
+  // the page is prerendered, so a date read during render is the build date.
+  const [today, setToday] = useState<Date | null>(null)
+  useEffect(() => {
+    if (name === 'calendar') setToday(new Date())
+  }, [name])
 
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden className={className}>
@@ -85,7 +92,7 @@ export function AppIcon({ name, size = 48, className, letter, hue }: Props) {
         </filter>
       </defs>
 
-      <g filter={url('shadow')}>{renderIcon(name, url, letter)}</g>
+      <g filter={url('shadow')}>{renderIcon(name, url, letter, today)}</g>
     </svg>
   )
 }
@@ -104,7 +111,7 @@ function lines(ys: number[], x1 = 19, x2 = 45) {
   return ys.map(y => <rect key={y} x={x1} y={y} width={x2 - x1} height="2.2" rx="1.1" fill="#b6bcc6" />)
 }
 
-function renderIcon(name: IconName, url: (s: string) => string, letter?: string) {
+function renderIcon(name: IconName, url: (s: string) => string, letter?: string, today?: Date | null) {
   switch (name) {
     case 'doc':
       return <Page url={url}>{lines([24, 30, 36, 42, 48])}</Page>
@@ -140,17 +147,16 @@ function renderIcon(name: IconName, url: (s: string) => string, letter?: string)
       )
 
     case 'calendar': {
-      const now = new Date()
-      const mon = now.toLocaleString('en-US', { month: 'short' }).toUpperCase()
+      const mon = today ? today.toLocaleString('en-US', { month: 'short' }).toUpperCase() : ''
       return (
         <>
           <rect x="8" y="8" width="48" height="50" rx="7" fill={url('paper')} stroke="#b9bec7" />
           <path d="M8 15a7 7 0 0 1 7-7h34a7 7 0 0 1 7 7v7H8z" fill={url('red')} />
-          <text x="32" y="19.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff" fontFamily="Helvetica, Arial, sans-serif" suppressHydrationWarning>
+          <text x="32" y="19.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff" fontFamily="Helvetica, Arial, sans-serif">
             {mon}
           </text>
-          <text x="32" y="49" textAnchor="middle" fontSize="24" fontWeight="600" fill="#2b2b2b" fontFamily="Helvetica, Arial, sans-serif" suppressHydrationWarning>
-            {now.getDate()}
+          <text x="32" y="49" textAnchor="middle" fontSize="24" fontWeight="600" fill="#2b2b2b" fontFamily="Helvetica, Arial, sans-serif">
+            {today ? today.getDate() : ''}
           </text>
         </>
       )
