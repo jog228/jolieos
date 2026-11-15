@@ -17,11 +17,14 @@ const ThemeContext = createContext<ThemeContextValue>({
 })
 
 const DARK_QUERY = '(prefers-color-scheme: dark)'
+// Not 'theme': older versions wrote that key on every visit, so it doesn't
+// reflect a real choice. Keep in sync with themeScript in app/layout.tsx.
+const STORAGE_KEY = 'theme-choice'
 
 // A stored value only exists once the visitor has picked a theme themselves.
 function readStored(): Theme | null {
   try {
-    const stored = localStorage.getItem('theme')
+    const stored = localStorage.getItem(STORAGE_KEY)
     return stored === 'light' || stored === 'dark' ? stored : null
   } catch {
     return null
@@ -54,7 +57,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const next: Theme = theme === 'light' ? 'dark' : 'light'
     setTheme(next)
     try {
-      localStorage.setItem('theme', next)
+      // Picking the theme the system already uses clears the override, so the
+      // site goes back to following the system setting.
+      const system: Theme = window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light'
+      if (next === system) localStorage.removeItem(STORAGE_KEY)
+      else localStorage.setItem(STORAGE_KEY, next)
     } catch {}
   }
 
