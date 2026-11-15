@@ -50,7 +50,7 @@ export const metadata: Metadata = {
 // Runs synchronously before first paint to prevent FOUC
 // Also marks returning visitors (same browser session) so the JolieOS boot
 // screen is skipped without a flash.
-const themeScript = `(function(){var d=document.documentElement;try{var s=localStorage.getItem('theme');d.setAttribute('data-theme',s||'dark')}catch(e){}try{if(sessionStorage.getItem('jolieos-booted'))d.setAttribute('data-booted','')}catch(e){}})();`
+const themeScript = `(function(){var d=document.documentElement;try{var s=null;try{s=localStorage.getItem('theme')}catch(e){}if(s!=='light'&&s!=='dark')s=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.setAttribute('data-theme',s)}catch(e){}try{if(sessionStorage.getItem('jolieos-booted'))d.setAttribute('data-booted','')}catch(e){}})();`
 
 export default function RootLayout({
   children,
