@@ -12,13 +12,38 @@ import { AppIcon, type IconName } from '../AppIcon'
 import { allProjects, type AppId } from '../registry'
 import { Label, OSButton, OSLinkButton } from '../ui'
 
-// ── Mail: compose a message, sent via the visitor's mail app ──
+// ── Mail: compose a message, sent through /api/contact ──
 export function ContactApp() {
+  const [from, setFrom] = useState('')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const [website, setWebsite] = useState('') // honeypot, hidden from people
   const [copied, setCopied] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [error, setError] = useState('')
 
-  const href = `mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  async function send() {
+    if (status === 'sending') return
+    setStatus('sending')
+    setError('')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: from, subject, message: body, website }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Something went wrong sending that.')
+      }
+      setStatus('sent')
+      setSubject('')
+      setBody('')
+    } catch (err) {
+      setStatus('error')
+      setError(err instanceof TypeError ? 'Could not reach the server. Check your connection and try again.' : (err as Error).message)
+    }
+  }
 
   async function copy() {
     try {
@@ -35,7 +60,7 @@ export function ContactApp() {
       className="flex h-full flex-col gap-3 p-5"
       onSubmit={e => {
         e.preventDefault()
-        window.location.href = href
+        send()
       }}
     >
       <p className="text-[14.5px] leading-relaxed">
@@ -59,6 +84,30 @@ export function ContactApp() {
       <span className="sr-only" aria-live="polite">{copied ? 'Email address copied' : ''}</span>
 
       <label className="flex items-center gap-2">
+        <Label className="w-16 shrink-0">From</Label>
+        <input
+          className={field}
+          type="email"
+          required
+          autoComplete="email"
+          value={from}
+          onChange={e => setFrom(e.target.value)}
+          placeholder="you@example.com"
+        />
+      </label>
+
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden
+        className="hidden"
+        value={website}
+        onChange={e => setWebsite(e.target.value)}
+      />
+
+      <label className="flex items-center gap-2">
         <Label className="w-16 shrink-0">Subject</Label>
         <input
           className={field}
@@ -72,6 +121,8 @@ export function ContactApp() {
         <span className="sr-only">Message</span>
         <textarea
           className={`${field} min-h-[120px] flex-1 resize-none leading-relaxed`}
+          required
+          maxLength={5000}
           value={body}
           onChange={e => setBody(e.target.value)}
           placeholder="Hi Jolie, …"
@@ -79,12 +130,22 @@ export function ContactApp() {
       </label>
 
       <div className="flex flex-wrap items-center gap-2">
-        <OSButton type="submit" variant="primary">Send</OSButton>
+        <OSButton type="submit" variant="primary" disabled={status === 'sending'}>
+          {status === 'sending' ? 'Sending…' : 'Send'}
+        </OSButton>
         <OSLinkButton href={links.linkedin}>LinkedIn</OSLinkButton>
         <OSLinkButton href={links.github}>GitHub</OSLinkButton>
       </div>
-      <p className="font-aqua text-[11.5px] leading-snug text-muted">
-        Send opens your mail app with this message filled in. No mail app set up? Copy my address above.
+      <p
+        role="status"
+        aria-live="polite"
+        className={`font-aqua text-[11.5px] leading-snug ${status === 'error' ? 'text-red-600' : 'text-muted'}`}
+      >
+        {status === 'sent'
+          ? 'Message sent. Thank you! I’ll reply to the address you gave.'
+          : status === 'error'
+            ? `${error} You can also copy my address above.`
+            : 'Send delivers this straight to my inbox. Prefer your own mail app? Copy my address above.'}
       </p>
     </form>
   )
