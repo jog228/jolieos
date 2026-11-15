@@ -7,7 +7,7 @@ import { links, profile } from '@/lib/content'
 import { experience } from '@/lib/experience'
 import { cn } from '@/lib/utils'
 import { AppIcon, type IconName } from './AppIcon'
-import { MENU_H, useOS } from './OSProvider'
+import { useOS } from './OSProvider'
 import { allProjects, PROJECT_HUES, projectBadge, shortOrg, type AppId } from './registry'
 
 interface MenuItem {
@@ -19,9 +19,9 @@ interface MenuItem {
 }
 
 const menuPanel =
-  'absolute left-0 top-[23px] min-w-[220px] overflow-hidden rounded-b-md border border-black/20 bg-[var(--menubar-top)] py-1 shadow-[0_10px_30px_rgba(0,0,0,.28)] backdrop-blur-xl'
+  'absolute left-0 top-[23px] min-w-[220px] max-md:top-9 max-md:min-w-[240px] overflow-hidden rounded-b-md border border-black/20 bg-[var(--menubar-top)] py-1 shadow-[0_10px_30px_rgba(0,0,0,.28)] backdrop-blur-xl'
 const menuItem =
-  'flex w-full items-center justify-between gap-6 px-4 py-[3px] text-left font-aqua text-[13px] text-ink hover:bg-gradient-to-b hover:from-[#a58bff] hover:to-[#7048e8] hover:text-white focus:bg-gradient-to-b focus:from-[#a58bff] focus:to-[#7048e8] focus:text-white focus:outline-none'
+  'flex w-full items-center justify-between gap-6 px-4 py-[3px] text-left font-aqua text-[13px] max-md:py-2.5 max-md:text-[15px] text-ink hover:bg-gradient-to-b hover:from-[#a58bff] hover:to-[#7048e8] hover:text-white focus:bg-gradient-to-b focus:from-[#a58bff] focus:to-[#7048e8] focus:text-white focus:outline-none'
 
 export function MenuBar() {
   const { open, closeAll, reboot } = useOS()
@@ -62,7 +62,7 @@ export function MenuBar() {
   return (
     <header
       className="os-menubar fixed inset-x-0 top-0 z-[5000] flex items-center justify-between px-2 font-aqua text-[13px] text-ink"
-      style={{ height: MENU_H }}
+      style={{ height: 'var(--menu-h)' }}
     >
       <nav aria-label="Menu bar" className="flex items-center">
         <Menu
@@ -87,7 +87,7 @@ export function MenuBar() {
           type="button"
           onClick={toggleTheme}
           aria-label={mounted && theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="flex h-[22px] w-7 items-center justify-center rounded hover:bg-black/10"
+          className="flex h-[22px] w-7 items-center justify-center rounded hover:bg-black/10 max-md:h-9 max-md:w-10"
         >
           {mounted && theme === 'dark' ? <Sun size={14} aria-hidden /> : <Moon size={14} aria-hidden />}
         </button>
@@ -169,7 +169,7 @@ function Menu({ label, ariaLabel, items }: { label: React.ReactNode; ariaLabel?:
           }
         }}
         className={cn(
-          'flex h-[22px] items-center rounded-[3px] px-2.5',
+          'flex h-[22px] items-center rounded-[3px] px-2.5 max-md:h-9 max-md:px-3.5 max-md:text-[15px]',
           isOpen ? 'bg-gradient-to-b from-[#a58bff] to-[#7048e8] text-white' : 'hover:bg-black/5',
         )}
       >
@@ -332,7 +332,7 @@ function Spotlight() {
         aria-expanded={isOpen}
         onClick={() => (isOpen ? close() : setOpen(true))}
         className={cn(
-          'flex h-[22px] w-7 items-center justify-center rounded',
+          'flex h-[22px] w-7 items-center justify-center rounded max-md:h-9 max-md:w-10',
           isOpen ? 'bg-gradient-to-b from-[#a58bff] to-[#7048e8] text-white' : 'hover:bg-black/10',
         )}
       >
@@ -340,7 +340,7 @@ function Spotlight() {
       </button>
 
       {isOpen && (
-        <div className="fixed right-2 top-[26px] w-[min(380px,calc(100vw-16px))] overflow-hidden rounded-lg border border-black/20 bg-[var(--menubar-top)] shadow-[0_14px_40px_rgba(0,0,0,.35)] backdrop-blur-xl">
+        <div className="fixed right-2 top-[26px] w-[min(380px,calc(100vw-16px))] max-md:top-[38px] overflow-hidden rounded-lg border border-black/20 bg-[var(--menubar-top)] shadow-[0_14px_40px_rgba(0,0,0,.35)] backdrop-blur-xl">
           <div className="flex items-center gap-2 border-b border-black/10 px-3 py-2">
             <span className="font-aqua text-[13px] font-bold">Spotlight</span>
             <input
@@ -377,7 +377,7 @@ function Spotlight() {
                   onMouseEnter={() => setSel(i)}
                   onClick={() => choose(h)}
                   className={cn(
-                    'flex w-full items-center gap-2.5 px-3 py-1.5 text-left font-aqua',
+                    'flex w-full items-center gap-2.5 px-3 py-1.5 text-left font-aqua max-md:py-2.5',
                     i === sel && 'bg-gradient-to-b from-[#a58bff] to-[#7048e8] text-white',
                   )}
                 >

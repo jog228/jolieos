@@ -71,7 +71,10 @@ export function BootScreen({ onDone }: { onDone: () => void }) {
         </div>
 
         <p className="mt-3 h-4 font-aqua text-[12px] text-white/60">{BOOT_LOG[Math.max(0, step - 1)]}…</p>
-        <p className="mt-6 font-aqua text-[11px] text-white/35">Press any key to skip</p>
+        <p className="mt-6 font-aqua text-[11px] text-white/35">
+          <span className="[@media(pointer:coarse)]:hidden">Press any key to skip</span>
+          <span className="hidden [@media(pointer:coarse)]:inline">Tap to skip</span>
+        </p>
       </div>
     </motion.div>
   )

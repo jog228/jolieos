@@ -71,10 +71,19 @@
   --text-2xs: 0.75rem;
 }
 
+/* Shell metrics. Phones get a taller menu bar (touch targets) and a shorter dock. */
+:root { --menu-h: 24px; --dock-h: 84px; }
+@media (max-width: 767px) {
+  :root { --menu-h: 36px; --dock-h: 66px; }
+}
+
 /* ─── Base ────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* no double-tap zoom, no tap delay */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -154,6 +163,10 @@ body {
 .os-light--zoom  { background: radial-gradient(circle at 50% 70%, #a6ec8f, #43b636 60%, #2a8a22); }
 .os-window[data-active="false"] .os-light { background: radial-gradient(circle at 50% 70%, #e8e8e8, #c4c4c4 60%, #a5a5a5); }
 .os-light svg { opacity: 0; }
+/* Phone close button: big enough to see and hit, glyph always visible */
+.os-light--lg { width: 22px; height: 22px; }
+.os-light--lg::after { left: 5px; right: 5px; top: 2px; height: 8px; }
+.os-light.os-light--lg svg { opacity: .7; }
 .os-lights:hover .os-light svg { opacity: .65; }
 
 /* Status bar along the bottom of a window */
@@ -245,4 +258,26 @@ html[data-booted] .boot-screen { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .os-blink, .os-spin { animation: none; }
+}
+
+/* ─── Phones ──────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Every window is a full-screen sheet between the menu bar and the dock.
+     Done in CSS (not just JS) so the server-rendered page is already right
+     before React loads. */
+  .os-window {
+    left: 0 !important; right: 0 !important; top: 0 !important; bottom: var(--dock-h) !important;
+    width: auto !important; height: auto !important;
+    border-radius: 0 !important;
+  }
+  .os-scroll { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  /* iOS zooms the page when a focused field is under 16px */
+  input, textarea, select { font-size: 16px !important; }
+}
+
+/* Touch screens: grow the small Aqua controls to comfortable tap sizes */
+@media (pointer: coarse) {
+  .os-btn { padding: 10px 16px; font-size: 14px; }
+  .os-seg { padding: 8px 12px; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+  .os-statusbar button:not(.os-btn):not(.os-seg) { padding: 6px 0; }
 }

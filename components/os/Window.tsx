@@ -72,7 +72,7 @@ export function Window({ win, children }: { win: Win; children: React.ReactNode 
 
   // Window coords are viewport-based; the desktop <main> starts below the menu bar
   const style: React.CSSProperties = fullscreen
-    ? { left: 0, right: 0, top: 0, bottom: DOCK_H, zIndex: win.z + 10 }
+    ? { left: 0, right: 0, top: 0, bottom: isMobile ? 'var(--dock-h)' : DOCK_H, zIndex: win.z + 10 }
     : { left: win.x, top: win.y - MENU_H, width: win.w, height: win.h, zIndex: win.z + 10 }
 
   return (
@@ -99,15 +99,33 @@ export function Window({ win, children }: { win: Win; children: React.ReactNode 
         onPointerMove={onTitlePointerMove}
         onPointerUp={onTitlePointerUp}
         onDoubleClick={() => !isMobile && toggleMax(win.id)}
-        className="os-titlebar relative flex h-[26px] shrink-0 select-none items-center px-2.5"
+        className={cn(
+          'os-titlebar relative flex shrink-0 select-none items-center',
+          isMobile ? 'h-11' : 'h-[26px] px-2.5',
+        )}
       >
+        {/* Phones: one large close button (44px target) instead of traffic lights */}
+        {isMobile && (
+          <button
+            type="button"
+            aria-label={`Close ${win.title}`}
+            onClick={() => close(win.id)}
+            className="relative z-10 flex h-11 w-12 shrink-0 items-center justify-center"
+          >
+            <span className="os-light os-light--close os-light--lg flex items-center justify-center">
+              <svg viewBox="0 0 10 10" width="12" height="12" aria-hidden className="relative z-10">
+                <path d="M3 3l4 4M7 3L3 7" stroke="#4d0000" strokeWidth="1.3" />
+              </svg>
+            </span>
+          </button>
+        )}
+
         {/* Traffic lights */}
+        {!isMobile && (
         <div className="os-lights relative z-10 flex items-center gap-2">
           <Light kind="close" label={`Close ${win.title}`} onClick={() => close(win.id)}>
             <path d="M3 3l4 4M7 3L3 7" stroke="#4d0000" strokeWidth="1.3" />
           </Light>
-          {!isMobile && (
-            <>
               <Light kind="min" label={`Minimize ${win.title}`} onClick={() => minimize(win.id)}>
                 <path d="M2.5 5h5" stroke="#5a3a00" strokeWidth="1.3" />
               </Light>
@@ -118,14 +136,14 @@ export function Window({ win, children }: { win: Win; children: React.ReactNode 
               >
                 <path d="M5 2.5v5M2.5 5h5" stroke="#0b4000" strokeWidth="1.3" />
               </Light>
-            </>
-          )}
         </div>
+        )}
 
         <h2
           id={titleId}
           className={cn(
-            'pointer-events-none absolute inset-x-20 truncate text-center font-aqua text-[13px] leading-none',
+            'pointer-events-none absolute truncate text-center font-aqua leading-none',
+            isMobile ? 'inset-x-14 text-[15px] font-semibold' : 'inset-x-20 text-[13px]',
             active ? 'text-[var(--chrome-title)]' : 'text-[var(--chrome-title-dim)]',
           )}
         >

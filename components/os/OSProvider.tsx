@@ -11,11 +11,11 @@ import {
   useEffect,
   useMemo,
   useReducer,
-  useState,
+  useSyncExternalStore,
 } from 'react'
 import { getMeta, parseHash, windowId, type AppId } from './registry'
 
-export const MENU_H = 24 // top menu bar height (px)
+export const MENU_H = 24 // top menu bar height (px) on desktop; phones use --menu-h in globals.css
 export const DOCK_H = 84 // space reserved for the dock (px)
 
 export interface Win {
@@ -187,6 +187,16 @@ export function useOS() {
   return ctx
 }
 
+const MOBILE_MQ = '(max-width: 767px)'
+function subscribeMobile(onChange: () => void) {
+  const mq = window.matchMedia(MOBILE_MQ)
+  mq.addEventListener('change', onChange)
+  return () => mq.removeEventListener('change', onChange)
+}
+function isMobileNow() {
+  return window.matchMedia(MOBILE_MQ).matches
+}
+
 function viewport() {
   return { vw: window.innerWidth, vh: window.innerHeight }
 }
@@ -199,16 +209,10 @@ export function OSProvider({
   onReboot: () => void
 }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Track mobile breakpoint
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
-    const update = () => setIsMobile(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
+  // Track the mobile breakpoint. useSyncExternalStore corrects the value
+  // before the first paint after hydration, so phones never flash the
+  // desktop layout.
+  const isMobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false)
 
   // Lay windows out against the real viewport on mount and on resize
   useEffect(() => {

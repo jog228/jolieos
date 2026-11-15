@@ -16,7 +16,7 @@ import { Label, Linkified, OSButton, OSLinkButton, StatusBar, type LinkMap } fro
 export function WelcomeApp() {
   const { open, isMobile } = useOS()
   return (
-    <div className="p-5 sm:px-7 sm:py-6">
+    <div className="flex flex-col p-5 sm:px-7 sm:py-6">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <Label>Welcome to JolieOS</Label>
         <p className="inline-flex items-center gap-2 rounded-full border border-hairline bg-canvas px-2.5 py-0.5 font-aqua text-[11.5px] text-muted">
@@ -32,7 +32,7 @@ export function WelcomeApp() {
       <p className="mt-2 text-[14.5px] leading-relaxed text-ink">{profile.tagline}</p>
 
       {/* The short version: three facts, each opening the window that backs it up */}
-      <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <ul className="mt-4 grid grid-cols-1 gap-2 max-sm:order-1 sm:grid-cols-3">
         {proofPoints.map(pt => (
           <li key={pt.label} className="flex">
             <button
@@ -61,11 +61,11 @@ export function WelcomeApp() {
         <OSButton onClick={() => open('contact')}>Contact</OSButton>
       </div>
 
-      <div className="mt-4 border-t border-hairline pt-3">
+      <div className="mt-4 border-t border-hairline pt-3 max-sm:order-2">
         <Label className="mb-1.5">How to use</Label>
         <ul className="space-y-0.5 text-[12.5px] leading-relaxed text-muted">
           {isMobile ? (
-            <li>Tap an icon or the dock to open things. Close windows with the red button.</li>
+            <li>Tap anything in the dock to open it. The red button closes a window and takes you back.</li>
           ) : (
             <>
               <li>Double-click desktop icons, or click anything in the dock. Drag windows by their title bars.</li>
@@ -179,7 +179,7 @@ export function SkillsApp() {
               onClick={() => setTab(i)}
               onKeyDown={onTabKey}
               className={cn(
-                'border-l border-black/15 px-3.5 py-1 font-aqua text-[12.5px] first:border-l-0',
+                'os-seg border-l border-black/15 px-3.5 py-1 font-aqua text-[12.5px] first:border-l-0',
                 tab === i
                   ? 'bg-gradient-to-b from-[#c7b5ff] via-[#9273f2] to-[#7048e8] text-white [text-shadow:0_-1px_0_rgba(0,0,0,.25)]'
                   : 'bg-gradient-to-b from-white to-[#e4e4e4] text-[#1d1d1f] hover:to-[#d8d8d8]',
@@ -228,9 +228,10 @@ export function LeadershipApp() {
             <div className="min-w-0 flex-1">
               <p className="font-display text-lg font-semibold leading-snug">{item.role}</p>
               <p className="text-[14px] text-muted">{item.organization}</p>
+              <p className="mt-0.5 font-aqua text-[12px] text-muted sm:hidden">{item.dates}</p>
               {item.note && <p className="mt-1 max-w-[46ch] text-[13px] leading-snug text-ink">{item.note}</p>}
             </div>
-            <p className="shrink-0 pt-1 text-right font-aqua text-[11.5px] text-muted">
+            <p className="shrink-0 pt-1 text-right font-aqua text-[11.5px] text-muted max-sm:hidden">
               {item.dates}
             </p>
           </li>

@@ -16,7 +16,7 @@ import { AppContent } from './AppContent'
 import { AppIcon, type IconName } from './AppIcon'
 import { BootScreen } from './BootScreen'
 import { MenuBar } from './MenuBar'
-import { DOCK_H, MENU_H, OSProvider, useOS, type Win } from './OSProvider'
+import { DOCK_H, OSProvider, useOS, type Win } from './OSProvider'
 import { getMeta, PROJECT_HUES, findProject, projectBadge, type AppId } from './registry'
 import { Window } from './Window'
 
@@ -96,7 +96,7 @@ function Desktop() {
     <main
       id="main-content"
       className="os-wallpaper fixed inset-x-0 bottom-0 overflow-hidden"
-      style={{ top: MENU_H }}
+      style={{ top: 'var(--menu-h)' }}
       onPointerDown={e => {
         if (e.target === e.currentTarget) setSelected(null)
       }}
@@ -132,7 +132,7 @@ function Desktop() {
                   }
                 }}
                 aria-label={item.href ? `${item.label} (opens in new tab)` : `Open ${item.label}`}
-                className="group flex w-[86px] flex-col items-center gap-1.5 outline-none"
+                className="group mx-auto flex w-full max-w-[86px] flex-col items-center gap-1.5 outline-none md:w-[86px]"
               >
                 <span
                   className={cn(
@@ -214,7 +214,7 @@ function Dock() {
       <div
         onMouseMove={e => mouseX.set(e.clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
-        className="os-dock pointer-events-auto flex max-w-full items-end gap-1.5 rounded-2xl px-2.5 pb-1.5 pt-2 sm:gap-2"
+        className="os-dock pointer-events-auto flex max-w-full items-end gap-1.5 rounded-2xl px-2.5 pb-1.5 pt-2 max-md:overflow-x-auto max-md:overflow-y-hidden sm:gap-2"
         style={{ height: base + 20 }}
       >
         {DOCK_APPS.filter(d => !(isMobile && d.desktopOnly)).map(d => (
@@ -224,6 +224,7 @@ function Dock() {
             running={isRunning(d)}
             mouseX={mouseX}
             magnify={magnify}
+            tips={!isMobile}
             base={base}
             onClick={() => (d.href ? window.open(d.href, '_blank', 'noopener,noreferrer') : d.app && open(d.app))}
           >
@@ -240,6 +241,7 @@ function Dock() {
             running
             mouseX={mouseX}
             magnify={magnify}
+            tips={!isMobile}
             base={base}
             onClick={() => focus(w.id)}
           >
@@ -252,6 +254,7 @@ function Dock() {
           running={trashOpen}
           mouseX={mouseX}
           magnify={magnify}
+          tips={!isMobile}
           base={base}
           onClick={() => open('trash')}
         >
@@ -267,6 +270,7 @@ function DockIcon({
   running,
   mouseX,
   magnify,
+  tips,
   base,
   onClick,
   children,
@@ -275,6 +279,7 @@ function DockIcon({
   running: boolean
   mouseX: MotionValue<number>
   magnify: boolean
+  tips: boolean // hover labels; off on touch, where they stick after a tap
   base: number
   onClick: () => void
   children: React.ReactNode
@@ -301,7 +306,7 @@ function DockIcon({
       onFocus={() => setHover(true)}
       onBlur={() => setHover(false)}
       style={magnify ? { width: size, height: size } : { width: base, height: base }}
-      className="relative flex shrink-0 items-end justify-center outline-none"
+      className="relative flex shrink-0 items-end justify-center outline-none before:absolute before:-inset-x-[3px] before:-inset-y-2.5 before:content-['']"
     >
       <span className="block h-full w-full [&>svg]:h-full [&>svg]:w-full">{children}</span>
 
@@ -315,7 +320,7 @@ function DockIcon({
 
       {/* Hover label */}
       <AnimatePresence>
-        {hover && (
+        {hover && tips && (
           <motion.span
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}

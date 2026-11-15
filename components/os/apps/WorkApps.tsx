@@ -276,7 +276,7 @@ export function ProjectsApp() {
 
 // ── Project case study ───────────────────────────────────────
 export function ProjectApp({ id }: { id?: string }) {
-  const { open } = useOS()
+  const { open, isMobile } = useOS()
   const p = findProject(id)
   if (!p) return <p className="p-6">Application not found.</p>
 
@@ -359,7 +359,7 @@ export function ProjectApp({ id }: { id?: string }) {
               ))}
             </ul>
             <p className="mt-2 font-aqua text-[11.5px] text-muted">
-              {p.imagesNote ? `${p.imagesNote} ` : ''}Click to enlarge.
+              {p.imagesNote ? `${p.imagesNote} ` : ''}{isMobile ? 'Tap' : 'Click'} to enlarge.
             </p>
           </section>
         ) : null}
@@ -493,7 +493,7 @@ function Turntable({ spin, playing, armAngle }: { spin: Spin; playing: boolean; 
 
   return (
     <div
-      className="relative aspect-[5/4] w-[min(280px,74vw)] rounded-xl border border-white/[.06]"
+      className="relative aspect-[5/4] w-[min(280px,74vw)] shrink-0 rounded-xl border border-white/[.06] max-sm:w-[44vw] max-sm:max-w-[200px]"
       style={{
         background: 'linear-gradient(145deg, #2b2b30, #151517)',
         boxShadow: '0 12px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06)',
@@ -598,24 +598,25 @@ export function RecordsApp() {
   }
 
   return (
-    <div className="grid h-full grid-cols-1 sm:grid-cols-[minmax(250px,44%)_1fr]">
-      {/* Turntable */}
-      <div className="relative flex flex-col items-center justify-center gap-4 bg-[radial-gradient(ellipse_at_top,#2c2c30,#101012)] p-6 text-white">
+    <div className="grid h-full grid-cols-1 max-sm:grid-rows-[auto_minmax(0,1fr)] sm:grid-cols-[minmax(250px,44%)_1fr]">
+      {/* Turntable. Phones: a compact row (deck left, controls right) so the crate keeps most of the screen */}
+      <div className="relative flex items-center justify-center gap-4 bg-[radial-gradient(ellipse_at_top,#2c2c30,#101012)] p-4 text-white sm:flex-col sm:p-6">
         <Turntable spin={spin} playing={playing} armAngle={armAngle} />
 
+        <div className="flex min-w-0 flex-col items-center gap-3 max-sm:flex-1 max-sm:flex-col-reverse sm:contents">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => step(-1)} aria-label="Previous record" className="rounded-full p-2 text-white/80 hover:bg-white/10">
+          <button type="button" onClick={() => step(-1)} aria-label="Previous record" className="rounded-full p-2 text-white/80 hover:bg-white/10 max-sm:p-3">
             <SkipBack size={16} aria-hidden />
           </button>
           <button
             type="button"
             onClick={() => setPlaying(v => !v)}
             aria-label={playing ? 'Pause' : 'Play'}
-            className="os-btn os-btn--primary flex h-10 w-10 items-center justify-center"
+            className="os-btn os-btn--primary flex h-10 w-10 shrink-0 items-center justify-center !p-0 max-sm:h-11 max-sm:w-11"
           >
             {playing ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden className="translate-x-px" />}
           </button>
-          <button type="button" onClick={() => step(1)} aria-label="Next record" className="rounded-full p-2 text-white/80 hover:bg-white/10">
+          <button type="button" onClick={() => step(1)} aria-label="Next record" className="rounded-full p-2 text-white/80 hover:bg-white/10 max-sm:p-3">
             <SkipForward size={16} aria-hidden />
           </button>
         </div>
@@ -627,6 +628,7 @@ export function RecordsApp() {
           <span className="mt-0.5 block truncate text-[13px] font-bold text-white/95">{rec.title}</span>
           <span className="block truncate text-[12px] text-white/65">{rec.artist}</span>
         </p>
+        </div>
       </div>
 
       <Crate
@@ -694,7 +696,7 @@ function Crate({
                 aria-pressed={digBy === d.id}
                 onClick={() => onDigBy(d.id)}
                 className={cn(
-                  'border-l border-black/15 px-2.5 py-[3px] font-aqua text-[11.5px] first:border-l-0',
+                  'os-seg border-l border-black/15 px-2.5 py-[3px] font-aqua text-[11.5px] first:border-l-0',
                   digBy === d.id
                     ? 'bg-gradient-to-b from-[#c7b5ff] via-[#9273f2] to-[#7048e8] text-white [text-shadow:0_-1px_0_rgba(0,0,0,.25)]'
                     : 'bg-gradient-to-b from-white to-[#e4e4e4] text-[#1d1d1f] hover:to-[#d8d8d8]',

@@ -57,7 +57,7 @@ export function ContactApp() {
 
   return (
     <form
-      className="flex h-full flex-col gap-3 p-5"
+      className="flex min-h-full flex-col gap-3 p-5"
       onSubmit={e => {
         e.preventDefault()
         send()
@@ -75,7 +75,7 @@ export function ContactApp() {
             type="button"
             onClick={copy}
             aria-label={copied ? 'Email copied' : 'Copy email address'}
-            className="shrink-0 text-muted hover:text-accent"
+            className="relative shrink-0 text-muted before:absolute before:-inset-3 before:content-[''] hover:text-accent"
           >
             {copied ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
           </button>
@@ -117,7 +117,7 @@ export function ContactApp() {
         />
       </label>
 
-      <label className="flex min-h-0 flex-1 flex-col gap-1.5">
+      <label className="flex min-h-[120px] flex-1 flex-col gap-1.5">
         <span className="sr-only">Message</span>
         <textarea
           className={`${field} min-h-[120px] flex-1 resize-none leading-relaxed`}
@@ -190,7 +190,7 @@ const HELP = `available commands:
   clear             clear the screen`
 
 export function TerminalApp() {
-  const { open, close } = useOS()
+  const { open, close, isMobile } = useOS()
   const { toggleTheme } = useTheme()
   const [lines, setLines] = useState<Line[]>([
     { kind: 'out', text: 'JolieOS Terminal v2026.10. Type "help" to get started.' },
@@ -205,9 +205,10 @@ export function TerminalApp() {
     endRef.current?.scrollIntoView({ block: 'end' })
   }, [lines])
 
+  // Phones: don't grab focus on open, it would throw the keyboard up unasked
   useEffect(() => {
-    inputRef.current?.focus({ preventScroll: true })
-  }, [])
+    if (!isMobile) inputRef.current?.focus({ preventScroll: true })
+  }, [isMobile])
 
   function run(raw: string): Line[] | 'clear' {
     const cmd = raw.trim()
